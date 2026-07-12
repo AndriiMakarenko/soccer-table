@@ -57,7 +57,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Apply the same ranking calculation independently to Overall, Home only, and Away only data.
   - Add focused tests for every ranking stage, two-team and multi-team ties, and shared positions.
 
-- [ ] **T07 — Add season completion and locked random tiebreakers**
+- [x] **T07 — Add season completion and locked random tiebreakers**
   - Depends on T06.
   - Detect completion only when every fixture has both scores.
   - Do not randomize unresolved ties while a season is incomplete.

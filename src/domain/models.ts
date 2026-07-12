@@ -22,6 +22,7 @@ export interface Match {
 }
 
 export interface RandomTiebreakerLock {
+  mode: TableMode
   teamIds: EntityId[]
   orderedTeamIds: EntityId[]
 }
