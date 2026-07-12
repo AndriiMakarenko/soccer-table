@@ -19,7 +19,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Add scripts for development, build, type checking, and unit tests.
   - Verify the production build and a smoke test both pass.
 
-- [ ] **T02 — Define domain models and shared validation helpers**
+- [x] **T02 — Define domain models and shared validation helpers**
   - Depends on T01.
   - Add typed models for `Team`, `Match`, `Season`, `League`, `AppState`, and table modes.
   - Represent unplayed scores as `null`, card counts as numbers defaulting to `0`, and locked random tiebreakers in season data.

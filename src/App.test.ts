@@ -7,6 +7,11 @@ import App from './App.vue'
 import router from './router'
 
 describe('application shell', () => {
+  /**
+   * GIVEN the application router is initialized at the root route
+   * WHEN App is rendered with Pinia, Vue Router, and PrimeVue
+   * THEN the dashboard content is visible and its placeholder action is disabled
+   */
   it('renders the dashboard at the root route', async () => {
     await router.push('/')
     await router.isReady()
