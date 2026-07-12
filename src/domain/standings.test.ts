@@ -35,6 +35,16 @@ function rowFor(teamId: string, matches: Match[], mode?: TableMode) {
   return row!
 }
 
+function rankedTeamIds(
+  rankingTeams: Team[],
+  matches: Match[],
+  mode: TableMode = 'overall',
+) {
+  return calculateStandings(rankingTeams, matches, mode).rows.map(
+    (row) => row.teamId,
+  )
+}
+
 describe('standings calculation', () => {
   /**
    * GIVEN fixtures containing a win, draw, and loss for Alpha
@@ -183,5 +193,233 @@ describe('standings calculation', () => {
     expect(() =>
       calculateStandings(teams, [createMatch({ awayTeamId: 'unknown' })]),
     ).toThrow('Match references unknown team: unknown')
+  })
+})
+
+describe('standings ranking', () => {
+  const rankingTeams: Team[] = [
+    { id: 'alpha', name: 'Alpha' },
+    { id: 'bravo', name: 'Bravo' },
+    { id: 'charlie', name: 'Charlie' },
+    { id: 'delta', name: 'Delta' },
+  ]
+
+  /**
+   * GIVEN teams with different points and teams tied on points with different goal differences
+   * WHEN the standings are ranked
+   * THEN points take precedence and goal difference resolves equal points
+   */
+  it('ranks by points before goal difference', () => {
+    const matches = [
+      createMatch({ homeScore: 2, awayScore: 0 }),
+      createMatch({
+        id: 'match-2',
+        homeTeamId: 'charlie',
+        awayTeamId: 'delta',
+        homeScore: 1,
+        awayScore: 0,
+      }),
+      createMatch({
+        id: 'match-3',
+        homeTeamId: 'alpha',
+        awayTeamId: 'charlie',
+        homeScore: 0,
+        awayScore: 0,
+      }),
+    ]
+
+    expect(rankedTeamIds(rankingTeams, matches)).toEqual([
+      'alpha',
+      'charlie',
+      'delta',
+      'bravo',
+    ])
+  })
+
+  /**
+   * GIVEN Alpha and Bravo tied on points and goal difference after other fixtures
+   * WHEN their direct match has a winner
+   * THEN head-to-head points rank that winner first
+   */
+  it('uses head-to-head points after points and goal difference', () => {
+    const matches = [
+      createMatch({ homeScore: 1, awayScore: 0 }),
+      createMatch({
+        id: 'match-2',
+        homeTeamId: 'charlie',
+        awayTeamId: 'alpha',
+        homeScore: 1,
+        awayScore: 0,
+      }),
+      createMatch({
+        id: 'match-3',
+        homeTeamId: 'bravo',
+        awayTeamId: 'delta',
+        homeScore: 2,
+        awayScore: 1,
+      }),
+    ]
+
+    expect(rankedTeamIds(rankingTeams, matches).indexOf('alpha')).toBeLessThan(
+      rankedTeamIds(rankingTeams, matches).indexOf('bravo'),
+    )
+  })
+
+  /**
+   * GIVEN Alpha and Bravo tied overall and on head-to-head points
+   * WHEN Alpha scored more goals in their direct fixtures
+   * THEN head-to-head goals scored rank Alpha first
+   */
+  it('uses head-to-head goals scored after head-to-head points', () => {
+    const matches = [
+      createMatch({ homeScore: 3, awayScore: 0 }),
+      createMatch({
+        id: 'match-2',
+        homeTeamId: 'bravo',
+        awayTeamId: 'alpha',
+        homeScore: 1,
+        awayScore: 0,
+      }),
+      createMatch({
+        id: 'match-3',
+        homeTeamId: 'alpha',
+        awayTeamId: 'charlie',
+        homeScore: 1,
+        awayScore: 0,
+      }),
+      createMatch({
+        id: 'match-4',
+        homeTeamId: 'bravo',
+        awayTeamId: 'delta',
+        homeScore: 5,
+        awayScore: 0,
+      }),
+    ]
+
+    expect(rankedTeamIds(rankingTeams, matches).indexOf('alpha')).toBeLessThan(
+      rankedTeamIds(rankingTeams, matches).indexOf('bravo'),
+    )
+  })
+
+  /**
+   * GIVEN tied teams whose direct fixture is level
+   * WHEN one team has more total goals and penalties later differ
+   * THEN total goals rank before lower penalty points
+   */
+  it('uses total goals before lower penalty points', () => {
+    const matches = [
+      createMatch({ homeScore: 0, awayScore: 0 }),
+      createMatch({
+        id: 'match-2',
+        homeTeamId: 'alpha',
+        awayTeamId: 'charlie',
+        homeScore: 1,
+        awayScore: 0,
+      }),
+      createMatch({
+        id: 'match-3',
+        homeTeamId: 'bravo',
+        awayTeamId: 'delta',
+        homeScore: 2,
+        awayScore: 1,
+        homeRedCards: 2,
+      }),
+    ]
+
+    expect(rankedTeamIds(rankingTeams, matches).indexOf('bravo')).toBeLessThan(
+      rankedTeamIds(rankingTeams, matches).indexOf('alpha'),
+    )
+  })
+
+  /**
+   * GIVEN teams equal through total goals but with different card penalties
+   * WHEN the standings are ranked
+   * THEN the team with fewer penalty points ranks first
+   */
+  it('uses lower penalty points as the final deterministic tiebreaker', () => {
+    const matches = [
+      createMatch({
+        homeScore: 1,
+        awayScore: 1,
+        homeYellowCards: 2,
+        awayYellowCards: 0,
+      }),
+    ]
+
+    expect(rankedTeamIds(rankingTeams.slice(0, 2), matches)).toEqual([
+      'bravo',
+      'alpha',
+    ])
+  })
+
+  /**
+   * GIVEN three fully tied teams and one team below them
+   * WHEN no deterministic criterion resolves the leading group
+   * THEN equal positions use standard competition ranking
+   */
+  it('assigns shared positions to unresolved multi-team ties', () => {
+    const rows = calculateStandings(rankingTeams, []).rows
+
+    expect(rows.map(({ position }) => position)).toEqual([1, 1, 1, 1])
+
+    const withTrailingTeam = calculateStandings(rankingTeams, [
+      createMatch({ homeScore: 1, awayScore: 0 }),
+      createMatch({
+        id: 'match-2',
+        homeTeamId: 'charlie',
+        awayTeamId: 'alpha',
+        homeScore: 1,
+        awayScore: 0,
+      }),
+      createMatch({
+        id: 'match-3',
+        homeTeamId: 'bravo',
+        awayTeamId: 'charlie',
+        homeScore: 1,
+        awayScore: 0,
+      }),
+    ]).rows
+
+    expect(withTrailingTeam.map(({ position }) => position)).toEqual([
+      1, 1, 1, 4,
+    ])
+  })
+
+  /**
+   * GIVEN fixtures whose overall, home-only, and away-only records differ
+   * WHEN each table mode is ranked
+   * THEN each mode independently filters both statistics and head-to-head data
+   */
+  it('ranks Overall, Home only, and Away only independently', () => {
+    const modeTeams = rankingTeams.slice(0, 3)
+    const matches = [
+      createMatch({ homeScore: 2, awayScore: 0 }),
+      createMatch({
+        id: 'match-2',
+        homeTeamId: 'charlie',
+        awayTeamId: 'alpha',
+        homeScore: 3,
+        awayScore: 0,
+      }),
+      createMatch({
+        id: 'match-3',
+        homeTeamId: 'bravo',
+        awayTeamId: 'charlie',
+        homeScore: 1,
+        awayScore: 0,
+      }),
+    ]
+
+    expect(rankedTeamIds(modeTeams, matches, 'overall')[0]).toBe('charlie')
+    expect(rankedTeamIds(modeTeams, matches, 'home')).toEqual([
+      'charlie',
+      'alpha',
+      'bravo',
+    ])
+    expect(rankedTeamIds(modeTeams, matches, 'away')).toEqual([
+      'charlie',
+      'bravo',
+      'alpha',
+    ])
   })
 })

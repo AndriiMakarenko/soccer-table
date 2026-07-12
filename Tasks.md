@@ -49,7 +49,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Calculate average total as `(sum(SF) / sum(PLD)) * 2`, formatted to exactly two decimals, or `N/A` when no games qualify.
   - Test wins/draws/losses, cleared or partial scores, goals, card penalties, all three modes, and average-total formatting.
 
-- [ ] **T06 — Implement deterministic ranking through penalty points**
+- [x] **T06 — Implement deterministic ranking through penalty points**
   - Depends on T05.
   - Rank by points, goal difference, tied-group head-to-head points, tied-group head-to-head goals scored, total goals scored, then lower penalty points.
   - For three or more tied teams, compute head-to-head values from a mini-table containing only matches among the tied group.
