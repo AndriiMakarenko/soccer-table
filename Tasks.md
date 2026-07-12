@@ -12,7 +12,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Foundation
 
-- [ ] **T01 — Scaffold the Vue application and test toolchain**
+- [x] **T01 — Scaffold the Vue application and test toolchain**
   - Create a Vue 3 + Vite + TypeScript project using pnpm.
   - Configure Pinia, Vue Router, Tailwind CSS, PrimeVue, and Vitest.
   - Add a minimal dark application shell and placeholder dashboard route at `/`.
@@ -147,4 +147,3 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Add labels, focus states, keyboard access, semantic headings/tables, and adequate contrast for primary workflows.
   - Remove placeholder UI and verify empty, loading, validation, confirmation, and failure states are visually consistent.
   - Run the complete typecheck, unit/component test suite, and production build; manually smoke-test the acceptance criteria in `PRD.md`.
-
