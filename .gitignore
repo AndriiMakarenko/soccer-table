@@ -1,9 +1,17 @@
-# Agentic artifacts
+# Agentic artifacts (installed skills)
 .agents
+
+# Playwright working directory
 .playwright-mcp
+
+# Package manager cache directories
 node_modules
 .pnpm-store
+.vite
+
+# Built output directory
 dist
+
 coverage
 *.local
 .DS_Store
