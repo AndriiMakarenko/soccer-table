@@ -1,0 +1,10 @@
+dist
+node_modules
+coverage
+.pnpm-store
+pnpm-lock.yaml
+PRD.md
+Tasks.md
+.agents
+.codex
+.playwright-mcp
