@@ -3,6 +3,7 @@ import type {
   League,
   Match,
   RandomTiebreakerLock,
+  TableMode,
   Season,
   Team,
 } from '@/domain/models'
@@ -155,9 +156,14 @@ function isMatch(value: unknown): value is Match {
 function isRandomTiebreakerLock(value: unknown): value is RandomTiebreakerLock {
   return (
     isRecord(value) &&
+    isTableMode(value.mode) &&
     isStringArray(value.teamIds) &&
     isStringArray(value.orderedTeamIds)
   )
+}
+
+function isTableMode(value: unknown): value is TableMode {
+  return value === 'overall' || value === 'home' || value === 'away'
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -43,7 +43,13 @@ const populatedState: AppState = {
         },
       ],
       legCount: 1,
-      randomTiebreakerLocks: [],
+      randomTiebreakerLocks: [
+        {
+          mode: 'overall',
+          teamIds: ['team-1', 'team-2'],
+          orderedTeamIds: ['team-2', 'team-1'],
+        },
+      ],
       createdAt: '2026-07-12T09:00:00.000Z',
       updatedAt: '2026-07-12T09:00:00.000Z',
     },

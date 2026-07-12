@@ -35,21 +35,21 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Core Business Logic
 
-- [ ] **T04 — Build and test the round-robin fixture generator**
+- [x] **T04 — Build and test the round-robin fixture generator**
   - Depends on T02.
   - Generate fixtures for 2–64 teams and 1–4 legs, using a hidden scheduling BYE when needed but never emitting a BYE match.
   - Ensure every pair meets once per leg, no team plays itself or twice in a round, and each fixture has all required default score/card fields.
   - Reverse home/away in leg 2 and alternate subsequent legs as evenly as possible.
   - Test even and odd team counts, pairing uniqueness, round participation, two-leg reversal, four legs, and the 64-team boundary.
 
-- [ ] **T05 — Calculate standings statistics and table-mode average totals**
+- [x] **T05 — Calculate standings statistics and table-mode average totals**
   - Depends on T02.
   - Derive PLD, W, D, L, SF, SA, SD, PTS, and penalty points from played fixtures only.
   - Support Overall, Home only, and Away only modes, recalculating every statistic from that mode's match set.
   - Calculate average total as `(sum(SF) / sum(PLD)) * 2`, formatted to exactly two decimals, or `N/A` when no games qualify.
   - Test wins/draws/losses, cleared or partial scores, goals, card penalties, all three modes, and average-total formatting.
 
-- [ ] **T06 — Implement deterministic ranking through penalty points**
+- [x] **T06 — Implement deterministic ranking through penalty points**
   - Depends on T05.
   - Rank by points, goal difference, tied-group head-to-head points, tied-group head-to-head goals scored, total goals scored, then lower penalty points.
   - For three or more tied teams, compute head-to-head values from a mini-table containing only matches among the tied group.
@@ -57,7 +57,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Apply the same ranking calculation independently to Overall, Home only, and Away only data.
   - Add focused tests for every ranking stage, two-team and multi-team ties, and shared positions.
 
-- [ ] **T07 — Add season completion and locked random tiebreakers**
+- [x] **T07 — Add season completion and locked random tiebreakers**
   - Depends on T06.
   - Detect completion only when every fixture has both scores.
   - Do not randomize unresolved ties while a season is incomplete.
