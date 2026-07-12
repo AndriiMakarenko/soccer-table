@@ -42,7 +42,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Reverse home/away in leg 2 and alternate subsequent legs as evenly as possible.
   - Test even and odd team counts, pairing uniqueness, round participation, two-leg reversal, four legs, and the 64-team boundary.
 
-- [ ] **T05 — Calculate standings statistics and table-mode average totals**
+- [x] **T05 — Calculate standings statistics and table-mode average totals**
   - Depends on T02.
   - Derive PLD, W, D, L, SF, SA, SD, PTS, and penalty points from played fixtures only.
   - Support Overall, Home only, and Away only modes, recalculating every statistic from that mode's match set.
