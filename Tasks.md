@@ -35,7 +35,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Core Business Logic
 
-- [ ] **T04 — Build and test the round-robin fixture generator**
+- [x] **T04 — Build and test the round-robin fixture generator**
   - Depends on T02.
   - Generate fixtures for 2–64 teams and 1–4 legs, using a hidden scheduling BYE when needed but never emitting a BYE match.
   - Ensure every pair meets once per leg, no team plays itself or twice in a round, and each fixture has all required default score/card fields.
