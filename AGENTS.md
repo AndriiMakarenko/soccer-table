@@ -33,6 +33,8 @@ Use Vue Composition API with `<script setup lang="ts">`. Prefer two-space indent
 
 Use Vitest, Vue Testing Library, and `@testing-library/jest-dom`. Test user-visible behavior through accessible roles and labels instead of implementation details. Add focused coverage for changed business logic, validation boundaries, routing, and important UI states. Run `pnpm check` before requesting review.
 
+Always create a GIVEN-WHEN-THEN JSDoc together with each test. `GIVEN` describes the preconditions, `WHEN` describes the triggering event, and `THEN` describes the expected outcome.
+
 ## Commit & Pull Request Guidelines
 
 History follows short Conventional Commit-style subjects such as `feat: scaffold Vue tournament manager foundation` and `chore: Define used skills`. Use an imperative, scoped summary with `feat:`, `fix:`, `test:`, `docs:`, or `chore:`.

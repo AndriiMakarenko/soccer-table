@@ -26,7 +26,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Add reusable helpers for IDs/timestamps and validation of names, non-negative integers, scores, card counts, team count (2–64), and leg count (1–4).
   - Cover validation boundaries and invalid inputs with Vitest.
 
-- [ ] **T03 — Implement the isolated localStorage persistence service**
+- [x] **T03 — Implement the isolated localStorage persistence service**
   - Depends on T02.
   - Add a versioned storage key and typed `load`/`save` API so callers do not access localStorage directly.
   - Return safe empty state for missing or corrupted data without crashing the app.
