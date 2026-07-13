@@ -84,7 +84,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## League and Season User Flows
 
-- [ ] **T10 — Build dashboard and league-management UI**
+- [x] **T10 — Build dashboard and league-management UI**
   - Depends on T08.
   - Implement `/` with a league list plus create, rename, open, and confirmed-delete actions.
   - Implement `/leagues/:leagueId` with its season list and create, rename, open, and confirmed-delete actions.

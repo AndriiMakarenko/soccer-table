@@ -1,118 +1,252 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
+import Message from 'primevue/message'
+import { computed, onMounted, shallowRef } from 'vue'
+
+import ConfirmDeleteDialog from '@/components/management/ConfirmDeleteDialog.vue'
+import LeagueCard from '@/components/management/LeagueCard.vue'
+import NameDialog from '@/components/management/NameDialog.vue'
+import type { League } from '@/domain/models'
+import { useLeagueStore } from '@/stores/league'
+import { useSeasonStore } from '@/stores/season'
+
+const leagueStore = useLeagueStore()
+const seasonStore = useSeasonStore()
+const createDialogVisible = shallowRef(false)
+const renameTarget = shallowRef<League | null>(null)
+const deleteTarget = shallowRef<League | null>(null)
+
+const seasonCounts = computed(() => {
+  const counts = new Map<string, number>()
+
+  for (const season of seasonStore.seasons) {
+    counts.set(season.leagueId, (counts.get(season.leagueId) ?? 0) + 1)
+  }
+
+  return counts
+})
+
+onMounted(() => {
+  if (!leagueStore.isLoaded) leagueStore.load()
+})
+
+function createLeague(name: string): void {
+  const result = leagueStore.createLeague(name)
+  if (result.success) createDialogVisible.value = false
+}
+
+function renameLeague(name: string): void {
+  if (!renameTarget.value) return
+  const result = leagueStore.renameLeague(renameTarget.value.id, name)
+  if (result.success) renameTarget.value = null
+}
+
+function deleteLeague(): void {
+  if (!deleteTarget.value) return
+  const result = leagueStore.deleteLeague(deleteTarget.value.id)
+  if (result.success) deleteTarget.value = null
+}
 </script>
 
 <template>
   <section class="dashboard" aria-labelledby="dashboard-title">
-    <div class="dashboard-copy">
-      <p class="eyebrow">Competition desk / 00 leagues</p>
-      <h1 id="dashboard-title" class="dashboard-title">
-        Every fixture.<br />One clear table.
-      </h1>
-      <p class="dashboard-intro">
-        Build round robin seasons, record matchdays, and watch the standings
-        settle in real time.
-      </p>
-      <Button
-        label="Create your first league"
-        disabled
-        class="dashboard-action"
+    <header class="dashboard-header">
+      <div>
+        <p class="eyebrow">
+          Competition desk /
+          {{ String(leagueStore.leagues.length).padStart(2, '0') }}
+          leagues
+        </p>
+        <h1 id="dashboard-title">League control</h1>
+        <p class="dashboard-intro">
+          Set up competitions, return to active seasons, and keep every matchday
+          in one place.
+        </p>
+      </div>
+      <Button label="Create league" @click="createDialogVisible = true" />
+    </header>
+
+    <Message
+      v-if="leagueStore.saveError"
+      severity="error"
+      role="alert"
+      class="save-error"
+      @close="leagueStore.clearSaveError"
+    >
+      {{ leagueStore.saveError }}
+    </Message>
+
+    <div
+      v-if="leagueStore.leagues.length > 0"
+      class="league-list"
+      aria-label="Leagues"
+    >
+      <LeagueCard
+        v-for="league in leagueStore.leagues"
+        :key="league.id"
+        :league="league"
+        :season-count="seasonCounts.get(league.id) ?? 0"
+        @rename="renameTarget = league"
+        @delete="deleteTarget = league"
       />
-      <p class="coming-soon">League creation arrives in the next setup step.</p>
     </div>
 
-    <div class="pitch-board" aria-hidden="true">
-      <span class="pitch-board__line" />
-      <span class="pitch-board__circle" />
-      <span class="pitch-board__spot" />
-      <p>Ready for kick-off</p>
+    <div v-else class="empty-state">
+      <div class="empty-pitch" aria-hidden="true">
+        <span class="halfway-line" />
+        <span class="centre-circle" />
+        <span class="centre-spot" />
+      </div>
+      <div class="empty-copy">
+        <p class="eyebrow">No competitions on the board</p>
+        <h2>Start with your first league.</h2>
+        <p>Create the league now, then add its seasons and teams.</p>
+        <Button
+          label="Create your first league"
+          @click="createDialogVisible = true"
+        />
+      </div>
     </div>
   </section>
+
+  <NameDialog
+    v-model:visible="createDialogVisible"
+    title="Create league"
+    field-label="League name"
+    submit-label="Create league"
+    @submit="createLeague"
+  />
+
+  <NameDialog
+    :visible="Boolean(renameTarget)"
+    title="Rename league"
+    field-label="League name"
+    submit-label="Save changes"
+    :initial-name="renameTarget?.name"
+    @update:visible="
+      (visible) => {
+        if (!visible) renameTarget = null
+      }
+    "
+    @submit="renameLeague"
+  />
+
+  <ConfirmDeleteDialog
+    :visible="Boolean(deleteTarget)"
+    entity-kind="league"
+    :entity-name="deleteTarget?.name ?? ''"
+    :detail="`This also deletes ${seasonCounts.get(deleteTarget?.id ?? '') ?? 0} associated seasons and all of their match data.`"
+    @update:visible="
+      (visible) => {
+        if (!visible) deleteTarget = null
+      }
+    "
+    @confirm="deleteLeague"
+  />
 </template>
 
 <style scoped>
 .dashboard {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
-  gap: clamp(3rem, 8vw, 8rem);
-  align-items: center;
-  min-height: calc(100vh - 5.25rem);
-  padding-block: 4rem;
+  padding-block: clamp(2.75rem, 7vw, 5.5rem);
 }
 
-.eyebrow,
-.coming-soon {
+.dashboard-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.eyebrow {
+  margin: 0;
   color: var(--color-muted);
-  font: 600 0.72rem/1.4 var(--font-utility);
-  letter-spacing: 0.14em;
+  font: 600 0.7rem/1.4 var(--font-utility);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.dashboard-title {
-  max-width: 11ch;
-  margin: 1.25rem 0 1.5rem;
+.dashboard-header h1 {
+  margin: 0.8rem 0 0;
   font-family: var(--font-headline);
-  font-size: clamp(3.3rem, 7vw, 6.8rem);
-  font-weight: 750;
-  letter-spacing: normal;
-  line-height: 0.92;
+  font-size: clamp(2.6rem, 7vw, 5.4rem);
+  font-weight: 780;
+  letter-spacing: -0.055em;
+  line-height: 0.95;
 }
 
 .dashboard-intro {
-  max-width: 36rem;
-  color: #bac6d8;
-  font-size: clamp(1rem, 1.6vw, 1.2rem);
-  line-height: 1.7;
+  max-width: 40rem;
+  margin: 1.1rem 0 0;
+  color: #b9c5d7;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
-.dashboard-action {
+.save-error {
+  margin-top: 1.25rem;
+}
+
+.league-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.empty-state {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.85fr) minmax(18rem, 1.15fr);
+  gap: clamp(2rem, 7vw, 6rem);
+  align-items: center;
   margin-top: 2rem;
-}
-.coming-soon {
-  margin-top: 0.8rem;
-  letter-spacing: 0.05em;
-  text-transform: none;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+  background: linear-gradient(120deg, rgb(16 27 44 / 82%), rgb(10 19 33 / 75%));
 }
 
-.pitch-board {
+.empty-pitch {
   position: relative;
-  aspect-ratio: 4 / 5;
+  min-height: 15rem;
   overflow: hidden;
-  border: 1px solid #30425d;
-  border-radius: 1.25rem;
-  background: linear-gradient(145deg, #101b2c, #0b1320);
-  box-shadow: 0 2rem 5rem rgb(0 0 0 / 28%);
+  border: 1px solid #38557e;
+  border-radius: 0.8rem;
+  background: #0a1321;
 }
 
-.pitch-board::before {
+.empty-pitch::before {
   position: absolute;
-  inset: 1.5rem;
-  border: 1px solid rgb(149 185 234 / 34%);
+  inset: 1rem;
+  border: 1px solid rgb(103 164 255 / 33%);
   content: '';
 }
 
-.pitch-board__line,
-.pitch-board__circle,
-.pitch-board__spot {
+.halfway-line,
+.centre-circle,
+.centre-spot {
   position: absolute;
   display: block;
 }
-.pitch-board__line {
-  top: 50%;
-  right: 1.5rem;
-  left: 1.5rem;
-  border-top: 1px solid rgb(149 185 234 / 34%);
+
+.halfway-line {
+  top: 1rem;
+  bottom: 1rem;
+  left: 50%;
+  border-left: 1px solid rgb(103 164 255 / 33%);
 }
-.pitch-board__circle {
+
+.centre-circle {
   top: 50%;
   left: 50%;
-  width: 32%;
-  aspect-ratio: 1;
-  border: 1px solid rgb(149 185 234 / 34%);
+  width: 5rem;
+  height: 5rem;
+  border: 1px solid rgb(103 164 255 / 33%);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
-.pitch-board__spot {
+
+.centre-spot {
   top: 50%;
   left: 50%;
   width: 0.4rem;
@@ -120,28 +254,35 @@ import Button from 'primevue/button'
   border-radius: 50%;
   background: var(--color-floodlight);
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 2rem var(--color-floodlight);
+  box-shadow: 0 0 1.5rem var(--color-floodlight);
 }
 
-.pitch-board p {
-  position: absolute;
-  right: 3rem;
-  bottom: 3rem;
-  left: 3rem;
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
-  letter-spacing: -0.035em;
+.empty-copy h2 {
+  max-width: 14ch;
+  margin: 0.7rem 0 0;
+  font-family: var(--font-headline);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.05;
 }
 
-@media (max-width: 800px) {
-  .dashboard {
-    grid-template-columns: 1fr;
-    min-height: auto;
+.empty-copy > p:not(.eyebrow) {
+  margin: 1rem 0 1.4rem;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .dashboard-header {
+    align-items: flex-start;
+    flex-direction: column;
   }
-  .pitch-board {
-    width: min(100%, 32rem);
-    aspect-ratio: 5 / 3;
+
+  .empty-state {
+    grid-template-columns: 1fr;
+  }
+
+  .empty-pitch {
+    min-height: 11rem;
   }
 }
 </style>
