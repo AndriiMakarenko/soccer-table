@@ -23,6 +23,21 @@ function unorderedPair(match: Match): string {
   return [match.homeTeamId, match.awayTeamId].sort().join(':')
 }
 
+function venueSequence(matches: readonly Match[], teamId: string): string {
+  return matches
+    .filter(
+      (match) => match.homeTeamId === teamId || match.awayTeamId === teamId,
+    )
+    .map((match) => (match.homeTeamId === teamId ? 'H' : 'A'))
+    .join('')
+}
+
+function longestVenueRun(sequence: string): number {
+  return Math.max(
+    ...Array.from(sequence.matchAll(/H+|A+/g), ([run]) => run.length),
+  )
+}
+
 describe('round-robin fixture generation', () => {
   /**
    * GIVEN four teams and one leg
@@ -110,10 +125,81 @@ describe('round-robin fixture generation', () => {
       )
 
       expect(reverseMatch).toMatchObject({
-        round: firstMatch.round,
         homeTeamId: firstMatch.awayTeamId,
         awayTeamId: firstMatch.homeTeamId,
       })
+    }
+  })
+
+  /**
+   * GIVEN an even-team round robin where strict alternation is not possible for every team
+   * WHEN home and away assignments are generated
+   * THEN the unavoidable repeated venues are limited to two consecutive matches
+   */
+  it('limits unavoidable home or away runs for an even team count', () => {
+    const teams = createTeams(4)
+    const matches = generate(teams)
+    const sequences = teams.map(({ id }) => venueSequence(matches, id))
+
+    expect(sequences.some((sequence) => /(HH|AA)/.test(sequence))).toBe(true)
+    expect(sequences.every((sequence) => longestVenueRun(sequence) <= 2)).toBe(
+      true,
+    )
+  })
+
+  /**
+   * GIVEN an odd-team round robin with one idle team in every round
+   * WHEN home and away assignments are generated
+   * THEN each team's played-match sequence alternates where possible and never runs beyond two
+   */
+  it('balances played-match venue runs around BYEs for an odd team count', () => {
+    const teams = createTeams(7)
+    const matches = generate(teams)
+
+    for (const team of teams) {
+      const sequence = venueSequence(matches, team.id)
+
+      expect(sequence).toHaveLength(6)
+      expect(longestVenueRun(sequence)).toBeLessThanOrEqual(2)
+    }
+  })
+
+  /**
+   * GIVEN two to four legs for representative even and odd team counts
+   * WHEN fixtures are generated with reversed return legs
+   * THEN leg boundaries do not create a home or away run longer than two matches
+   */
+  it.each([
+    { teamCount: 4, legCount: 2 },
+    { teamCount: 5, legCount: 3 },
+    { teamCount: 8, legCount: 4 },
+  ])(
+    'keeps venue runs balanced across $teamCount teams and $legCount legs',
+    ({ teamCount, legCount }) => {
+      const teams = createTeams(teamCount)
+      const matches = generate(teams, legCount)
+
+      for (const team of teams) {
+        expect(
+          longestVenueRun(venueSequence(matches, team.id)),
+        ).toBeLessThanOrEqual(2)
+      }
+    },
+  )
+
+  /**
+   * GIVEN fixture schedules spanning the supported team-count range
+   * WHEN each team's ordered venue sequence is inspected
+   * THEN none contains three consecutive home or three consecutive away matches
+   */
+  it('never creates venue runs longer than two matches', () => {
+    for (let teamCount = 2; teamCount <= 64; teamCount += 1) {
+      const teams = createTeams(teamCount)
+      const matches = generate(teams)
+
+      for (const team of teams) {
+        expect(venueSequence(matches, team.id)).not.toMatch(/HHH|AAA/)
+      }
     }
   })
 

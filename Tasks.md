@@ -158,3 +158,12 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Center the capped standings table and its matching header when the viewport is wider than the table.
   - Preserve contained horizontal scrolling on narrow screens without introducing page-level overflow.
   - Verify the layout at wide desktop and mobile viewport sizes with Playwright, then run the complete project check.
+
+- [x] **T18 — Balance home and away assignments in generated fixtures**
+  - Depends on T04 and T09.
+  - Replace fully random home/away assignment during fixture generation with a schedule that aims for each team to alternate between home and away matches throughout the season.
+  - Prefer a `home, away, home, away` sequence (or its inverse) for every team whenever the round-robin constraints allow it.
+  - Allow no more than two consecutive home or two consecutive away matches when strict alternation is not possible.
+  - Preserve the existing guarantees for pair uniqueness, round participation, leg count, BYE handling, and home/away reversal across legs.
+  - Add focused fixture-generator tests covering even and odd team counts, unavoidable two-match home/away runs, multiple legs, and the absence of runs longer than two matches.
+  - Run the complete project check after implementation.
