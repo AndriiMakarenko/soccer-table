@@ -1,16 +1,28 @@
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import { render, screen } from '@testing-library/vue'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App.vue'
 import router from './router'
+import { persistenceService } from './services/storage'
 
 describe('application shell', () => {
+  beforeEach(() => {
+    vi.spyOn(persistenceService, 'load').mockReturnValue({
+      leagues: [],
+      seasons: [],
+    })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   /**
    * GIVEN the application router is initialized at the root route
    * WHEN App is rendered with Pinia, Vue Router, and PrimeVue
-   * THEN the dashboard content is visible and its placeholder action is disabled
+   * THEN the management dashboard and enabled first-league action are visible
    */
   it('renders the dashboard at the root route', async () => {
     await router.push('/')
@@ -23,11 +35,11 @@ describe('application shell', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: /every fixture.*one clear table/i }),
+      screen.getByRole('heading', { name: 'League control' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Fixture Board')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Create your first league' }),
-    ).toBeDisabled()
+    ).toBeEnabled()
   })
 })

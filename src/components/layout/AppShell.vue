@@ -23,7 +23,7 @@
   background:
     radial-gradient(
       circle at 78% 18%,
-      rgb(45 108 223 / 10%),
+      rgb(82 136 193 / 12%),
       transparent 28rem
     ),
     var(--color-night);

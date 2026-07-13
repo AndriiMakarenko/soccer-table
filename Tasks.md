@@ -84,7 +84,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## League and Season User Flows
 
-- [ ] **T10 — Build dashboard and league-management UI**
+- [x] **T10 — Build dashboard and league-management UI**
   - Depends on T08.
   - Implement `/` with a league list plus create, rename, open, and confirmed-delete actions.
   - Implement `/leagues/:leagueId` with its season list and create, rename, open, and confirmed-delete actions.
@@ -92,7 +92,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Use accessible PrimeVue controls and responsive dark-theme layout for desktop and tablet.
   - Add component tests for the main CRUD interactions and confirmations.
 
-- [ ] **T11 — Build season creation and team-entry flow**
+- [x] **T11 — Build season creation and team-entry flow**
   - Depends on T09 and T10.
   - Implement `/leagues/:leagueId/seasons/new` for season name, bulk team names, and number of legs.
   - Show clear validation for duplicate names, team-count limits, and invalid leg counts.
@@ -100,7 +100,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Prevent accidental duplicate submission and surface persistence errors without losing entered form data.
   - Add component tests for valid creation and each major validation path.
 
-- [ ] **T12 — Build the season overview and lifecycle actions**
+- [x] **T12 — Build the season overview and lifecycle actions**
   - Depends on T09 and T11.
   - Implement `/leagues/:leagueId/seasons/:seasonId` with season summary, team count, leg count, fixture/result progress, and links to fixtures and standings.
   - Support season rename, reset all results, and fixture regeneration.

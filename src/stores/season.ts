@@ -13,6 +13,7 @@ import {
   validateTeamCount,
   type ValidationResult,
 } from '@/domain/validation'
+import type { SaveResult } from '@/services/storage'
 
 import { useAppStateStore } from './appState'
 import type { StoreMutationResult } from './types'
@@ -21,6 +22,10 @@ export interface CreateSeasonInput {
   leagueId: string
   name: unknown
   legCount?: unknown
+}
+
+export interface CreateSeasonWithFixturesInput extends CreateSeasonInput {
+  teamInput: unknown
 }
 
 export interface MatchResultInput {
@@ -140,6 +145,45 @@ export const useSeasonStore = defineStore('seasons', () => {
       value: season,
       saveResult: appState.persist(),
     }
+  }
+
+  function createSeasonWithFixtures(
+    input: CreateSeasonWithFixturesInput,
+  ): StoreMutationResult<Season> {
+    const leagueExists = appState.leagues.some(
+      (league) => league.id === input.leagueId,
+    )
+
+    if (!leagueExists) {
+      return notFound(`League ${input.leagueId} was not found`)
+    }
+
+    const nameResult = validateName(input.name, 'Season name')
+    if (!nameResult.valid) return validationFailure(nameResult.error)
+
+    const namesResult = parseBulkTeamInput(input.teamInput)
+    if (!namesResult.valid) return validationFailure(namesResult.error)
+
+    const legCountResult = validateLegCount(input.legCount ?? 1)
+    if (!legCountResult.valid) return validationFailure(legCountResult.error)
+
+    const timestamp = createTimestamp()
+    const teams = namesResult.value.map((name) => ({ id: createId(), name }))
+    const season: Season = {
+      id: createId(),
+      leagueId: input.leagueId,
+      name: nameResult.value,
+      teams,
+      matches: generateRoundRobinFixtures(teams, legCountResult.value),
+      legCount: legCountResult.value,
+      randomTiebreakerLocks: [],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+
+    appState.seasons.push(season)
+
+    return persisted(season)
   }
 
   function renameSeason(
@@ -317,6 +361,10 @@ export const useSeasonStore = defineStore('seasons', () => {
     return { success: true, value, saveResult: appState.persist() }
   }
 
+  function savePendingChanges(): SaveResult {
+    return appState.persist()
+  }
+
   return {
     seasons,
     isLoaded,
@@ -325,6 +373,7 @@ export const useSeasonStore = defineStore('seasons', () => {
     seasonsForLeague,
     seasonById,
     createSeason,
+    createSeasonWithFixtures,
     renameSeason,
     deleteSeason,
     setTeamsFromBulkInput,
@@ -332,6 +381,7 @@ export const useSeasonStore = defineStore('seasons', () => {
     updateMatchResult,
     resetAllResults,
     regenerateFixtures,
+    savePendingChanges,
     clearSaveError: appState.clearSaveError,
   }
 })
