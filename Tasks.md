@@ -121,7 +121,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Standings UI
 
-- [ ] **T14 — Build the standings page with Overall/Home/Away modes**
+- [x] **T14 — Build the standings page with Overall/Home/Away modes**
   - Depends on T07, T09, and T12.
   - Implement `/leagues/:leagueId/seasons/:seasonId/table` with an easy-to-use Overall, Home only, and Away only selector.
   - Display POS, Team, PLD, W, D, L, SF, SA, SD, and PTS in a dense dark table with aligned compact numeric columns and row dividers.
