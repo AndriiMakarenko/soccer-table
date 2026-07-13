@@ -42,7 +42,7 @@ describe('league management views', () => {
   /**
    * GIVEN an empty dashboard and an open create-league dialog
    * WHEN the user submits whitespace and then a valid league name
-   * THEN inline validation is shown before the new league appears in the list
+   * THEN only the first-league action is initially shown and validation precedes creation
    */
   it('validates and creates a league from the dashboard', async () => {
     const { router } = await renderView(DashboardView, '/')
@@ -50,8 +50,13 @@ describe('league management views', () => {
     expect(
       screen.getByRole('heading', { name: 'Start with your first league.' }),
     ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Create league' }),
+    ).not.toBeInTheDocument()
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Create league' }))
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Create your first league' }),
+    )
     const dialog = await screen.findByRole('dialog', { name: 'Create league' })
     const input = within(dialog).getByRole('textbox', { name: 'League name' })
 
@@ -87,6 +92,13 @@ describe('league management views', () => {
       seasons: [createSeason({ leagueId: league.id })],
     }
     await renderView(DashboardView, '/')
+
+    expect(
+      screen.getByRole('button', { name: 'Create league' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Create your first league' }),
+    ).not.toBeInTheDocument()
 
     const actions = screen.getByRole('group', {
       name: 'Premier League actions',
@@ -161,7 +173,9 @@ describe('league management views', () => {
     })
     await renderView(DashboardView, '/')
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Create league' }))
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Create your first league' }),
+    )
     const dialog = await screen.findByRole('dialog', { name: 'Create league' })
     await fireEvent.update(
       within(dialog).getByRole('textbox', { name: 'League name' }),

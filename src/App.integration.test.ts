@@ -174,7 +174,9 @@ describe('application integration', () => {
     })
     await renderApp('/')
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Create league' }))
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Create your first league' }),
+    )
     const dialog = await screen.findByRole('dialog', { name: 'Create league' })
     await fireEvent.update(
       within(dialog).getByRole('textbox', { name: 'League name' }),

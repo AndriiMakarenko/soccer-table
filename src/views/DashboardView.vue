@@ -63,7 +63,11 @@ function deleteLeague(): void {
           in one place.
         </p>
       </div>
-      <Button label="Create league" @click="createDialogVisible = true" />
+      <Button
+        v-if="leagueStore.leagues.length > 0"
+        label="Create league"
+        @click="createDialogVisible = true"
+      />
     </header>
 
     <GlobalPersistenceError fallback-only />
