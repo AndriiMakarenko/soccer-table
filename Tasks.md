@@ -100,7 +100,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Prevent accidental duplicate submission and surface persistence errors without losing entered form data.
   - Add component tests for valid creation and each major validation path.
 
-- [ ] **T12 — Build the season overview and lifecycle actions**
+- [x] **T12 — Build the season overview and lifecycle actions**
   - Depends on T09 and T11.
   - Implement `/leagues/:leagueId/seasons/:seasonId` with season summary, team count, leg count, fixture/result progress, and links to fixtures and standings.
   - Support season rename, reset all results, and fixture regeneration.
