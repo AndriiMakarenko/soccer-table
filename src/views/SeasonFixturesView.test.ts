@@ -135,6 +135,14 @@ describe('season fixtures view', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Northside FC score must be a non-negative integer',
     )
+    expect(
+      screen.getByRole('spinbutton', { name: 'Northside FC score' }),
+    ).toHaveAttribute('aria-invalid', 'true')
+    expect(
+      screen.getByRole('spinbutton', { name: 'Northside FC score' }),
+    ).toHaveAccessibleDescription(
+      'Northside FC score must be a non-negative integer',
+    )
     expect(state.seasons[0]?.matches[0]).toMatchObject({
       homeScore: null,
       awayScore: null,

@@ -28,6 +28,9 @@ const activeOption = computed(
     modeOptions.find((option) => option.value === activeMode.value) ??
     modeOptions[0]!,
 )
+const tableCaption = computed(
+  () => `${activeOption.value.label} standings for ${props.season.name}`,
+)
 </script>
 
 <template>
@@ -46,6 +49,7 @@ const activeOption = computed(
           class="mode-button"
           :class="{ 'mode-button--active': activeMode === option.value }"
           :aria-pressed="activeMode === option.value"
+          aria-controls="season-standings-table"
           @click="activeMode = option.value"
         >
           {{ option.label }}
@@ -59,19 +63,32 @@ const activeOption = computed(
       aria-label="Scrollable standings table"
       tabindex="0"
     >
-      <table class="standings-table" aria-label="Season standings">
+      <table
+        id="season-standings-table"
+        class="standings-table"
+        aria-label="Season standings"
+      >
+        <caption class="visually-hidden">
+          {{
+            tableCaption
+          }}
+        </caption>
         <thead>
           <tr>
-            <th scope="col" class="position-column">POS</th>
+            <th scope="col" class="position-column">
+              <abbr title="Position">POS</abbr>
+            </th>
             <th scope="col" class="team-column">Team</th>
-            <th scope="col">PLD</th>
-            <th scope="col">W</th>
-            <th scope="col">D</th>
-            <th scope="col">L</th>
-            <th scope="col">SF</th>
-            <th scope="col">SA</th>
-            <th scope="col">SD</th>
-            <th scope="col" class="points-column">PTS</th>
+            <th scope="col"><abbr title="Played">PLD</abbr></th>
+            <th scope="col"><abbr title="Won">W</abbr></th>
+            <th scope="col"><abbr title="Drawn">D</abbr></th>
+            <th scope="col"><abbr title="Lost">L</abbr></th>
+            <th scope="col"><abbr title="Scored for">SF</abbr></th>
+            <th scope="col"><abbr title="Scored against">SA</abbr></th>
+            <th scope="col"><abbr title="Score difference">SD</abbr></th>
+            <th scope="col" class="points-column">
+              <abbr title="Points">PTS</abbr>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -143,7 +160,7 @@ const activeOption = computed(
 }
 
 .mode-button {
-  min-height: 2.35rem;
+  min-height: 2.75rem;
   padding: 0.55rem 0.9rem;
   border: 0;
   border-radius: 0.15rem;
@@ -191,6 +208,10 @@ const activeOption = computed(
   color: var(--color-muted);
   font: 750 0.65rem/1 var(--font-utility);
   letter-spacing: 0.07em;
+}
+
+.standings-table abbr {
+  text-decoration: none;
 }
 
 .standings-table tbody td {

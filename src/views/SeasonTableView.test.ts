@@ -59,6 +59,10 @@ describe('season table view', () => {
     expect(
       screen.getByRole('region', { name: 'Scrollable standings table' }),
     ).toHaveAttribute('tabindex', '0')
+    expect(screen.getByRole('table')).toHaveAccessibleName('Season standings')
+    expect(screen.getByRole('table')).toHaveTextContent(
+      'Overall standings for 2026/27',
+    )
   })
 
   /**
@@ -73,6 +77,10 @@ describe('season table view', () => {
     expect(screen.getByRole('button', { name: 'Home only' })).toHaveAttribute(
       'aria-pressed',
       'true',
+    )
+    expect(screen.getByRole('button', { name: 'Home only' })).toHaveAttribute(
+      'aria-controls',
+      'season-standings-table',
     )
     expect(rowText('Northside FC')).toBe('1Northside FC11003123')
     expect(rowText('Riverside United')).toBe('3Riverside United00000000')

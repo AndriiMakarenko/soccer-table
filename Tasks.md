@@ -140,7 +140,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Confirm a reload restores leagues, seasons, fixtures, results, cards, and locked random tiebreakers.
   - Add integration tests for representative navigation, reload restoration, invalid routes, and quota-error presentation.
 
-- [ ] **T16 — Perform final responsive UI polish and accessibility pass**
+- [x] **T16 — Perform final responsive UI polish and accessibility pass**
   - Depends on T15.
   - Apply a cohesive dark visual system using PrimeVue for controls and Tailwind for spacing/layout.
   - Verify fixture score controls stay centered, round actions remain prominent, and standings remain scan-friendly at desktop and tablet widths.

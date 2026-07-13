@@ -39,6 +39,10 @@ describe('application shell', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Fixture Board')).toBeInTheDocument()
     expect(
+      screen.getByRole('link', { name: 'Skip to main content' }),
+    ).toHaveAttribute('href', '#main-content')
+    expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content')
+    expect(
       screen.getByRole('button', { name: 'Create your first league' }),
     ).toBeEnabled()
   })

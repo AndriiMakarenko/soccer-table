@@ -29,6 +29,7 @@ const emit = defineEmits<{
 
 const editing = shallowRef(false)
 const errorMessage = shallowRef('')
+const invalidFieldId = shallowRef('')
 const drafts = reactive<Record<string, MatchDraft>>({})
 
 watch(
@@ -44,12 +45,14 @@ function teamName(teamId: string): string {
 function beginEditing(): void {
   resetDrafts()
   errorMessage.value = ''
+  invalidFieldId.value = ''
   editing.value = true
 }
 
 function cancelEditing(): void {
   resetDrafts()
   errorMessage.value = ''
+  invalidFieldId.value = ''
   editing.value = false
 }
 
@@ -104,6 +107,7 @@ function saveRound(): void {
       const validation = field.validate(field.value, field.label)
       if (!validation.valid) {
         errorMessage.value = validation.error
+        invalidFieldId.value = `${match.id}-${field.key}`
         return
       }
       result[field.key] = validation.value
@@ -115,6 +119,7 @@ function saveRound(): void {
   emit('save', updates)
   editing.value = false
   errorMessage.value = ''
+  invalidFieldId.value = ''
 }
 
 function resetDrafts(): void {
@@ -169,6 +174,7 @@ function resetDrafts(): void {
 
     <Message
       v-if="errorMessage"
+      :id="`round-${leg}-${round}-error`"
       severity="error"
       size="small"
       variant="simple"
@@ -202,6 +208,12 @@ function resetDrafts(): void {
                 inputmode="numeric"
                 min="0"
                 step="1"
+                :aria-invalid="invalidFieldId === `${match.id}-homeScore`"
+                :aria-describedby="
+                  invalidFieldId === `${match.id}-homeScore`
+                    ? `round-${leg}-${round}-error`
+                    : undefined
+                "
               />
               <span class="versus" aria-hidden="true">v</span>
               <label class="visually-hidden" :for="`${match.id}-away-score`">
@@ -215,6 +227,12 @@ function resetDrafts(): void {
                 inputmode="numeric"
                 min="0"
                 step="1"
+                :aria-invalid="invalidFieldId === `${match.id}-awayScore`"
+                :aria-describedby="
+                  invalidFieldId === `${match.id}-awayScore`
+                    ? `round-${leg}-${round}-error`
+                    : undefined
+                "
               />
             </template>
             <template v-else>
@@ -229,48 +247,80 @@ function resetDrafts(): void {
           }}</strong>
         </div>
 
-        <div v-if="editing && drafts[match.id]" class="discipline-grid">
+        <fieldset v-if="editing && drafts[match.id]" class="discipline-grid">
+          <legend class="visually-hidden">
+            Cards for {{ teamName(match.homeTeamId) }} versus
+            {{ teamName(match.awayTeamId) }}
+          </legend>
           <label>
             <span>{{ teamName(match.homeTeamId) }} yellow cards</span>
             <input
+              :id="`${match.id}-homeYellowCards`"
               v-model="drafts[match.id]!.homeYellowCards"
               type="number"
               inputmode="numeric"
               min="0"
               step="1"
+              :aria-invalid="invalidFieldId === `${match.id}-homeYellowCards`"
+              :aria-describedby="
+                invalidFieldId === `${match.id}-homeYellowCards`
+                  ? `round-${leg}-${round}-error`
+                  : undefined
+              "
             />
           </label>
           <label>
             <span>{{ teamName(match.homeTeamId) }} red cards</span>
             <input
+              :id="`${match.id}-homeRedCards`"
               v-model="drafts[match.id]!.homeRedCards"
               type="number"
               inputmode="numeric"
               min="0"
               step="1"
+              :aria-invalid="invalidFieldId === `${match.id}-homeRedCards`"
+              :aria-describedby="
+                invalidFieldId === `${match.id}-homeRedCards`
+                  ? `round-${leg}-${round}-error`
+                  : undefined
+              "
             />
           </label>
           <label>
             <span>{{ teamName(match.awayTeamId) }} yellow cards</span>
             <input
+              :id="`${match.id}-awayYellowCards`"
               v-model="drafts[match.id]!.awayYellowCards"
               type="number"
               inputmode="numeric"
               min="0"
               step="1"
+              :aria-invalid="invalidFieldId === `${match.id}-awayYellowCards`"
+              :aria-describedby="
+                invalidFieldId === `${match.id}-awayYellowCards`
+                  ? `round-${leg}-${round}-error`
+                  : undefined
+              "
             />
           </label>
           <label>
             <span>{{ teamName(match.awayTeamId) }} red cards</span>
             <input
+              :id="`${match.id}-awayRedCards`"
               v-model="drafts[match.id]!.awayRedCards"
               type="number"
               inputmode="numeric"
               min="0"
               step="1"
+              :aria-invalid="invalidFieldId === `${match.id}-awayRedCards`"
+              :aria-describedby="
+                invalidFieldId === `${match.id}-awayRedCards`
+                  ? `round-${leg}-${round}-error`
+                  : undefined
+              "
             />
           </label>
-        </div>
+        </fieldset>
       </section>
     </div>
   </article>
@@ -322,6 +372,10 @@ function resetDrafts(): void {
   align-items: center;
   justify-content: flex-end;
   gap: 0.35rem;
+}
+
+.round-actions :deep(.p-button) {
+  min-height: 2.75rem;
 }
 
 .round-error {
@@ -415,6 +469,7 @@ function resetDrafts(): void {
   border: 1px solid var(--color-line);
   border-radius: 0.6rem;
   background: var(--color-panel);
+  min-inline-size: 0;
 }
 
 .discipline-grid label {
@@ -435,17 +490,6 @@ function resetDrafts(): void {
   border-radius: 0.35rem;
   background: var(--color-panel-deep);
   color: var(--color-chalk);
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 @media (max-width: 720px) {
