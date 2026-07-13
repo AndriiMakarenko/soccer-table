@@ -37,6 +37,11 @@ export interface MatchResultInput {
   awayRedCards?: unknown
 }
 
+export interface RoundMatchResultInput {
+  matchId: string
+  result: MatchResultInput
+}
+
 export interface RegenerateFixturesInput {
   legCount?: unknown
   teamInput?: unknown
@@ -309,6 +314,40 @@ export const useSeasonStore = defineStore('seasons', () => {
     return persisted(match)
   }
 
+  function updateRoundResults(
+    seasonId: string,
+    updates: RoundMatchResultInput[],
+  ): StoreMutationResult<Match[]> {
+    const season = seasonById(seasonId)
+
+    if (!season) return notFound(`Season ${seasonId} was not found`)
+
+    const validatedUpdates: Array<{
+      match: Match
+      result: ValidatedMatchResultInput
+    }> = []
+
+    for (const update of updates) {
+      const match = season.matches.find(
+        (candidate) => candidate.id === update.matchId,
+      )
+      if (!match) return notFound(`Match ${update.matchId} was not found`)
+
+      const result = validateMatchResultInput(update.result)
+      if (!result.valid) return validationFailure(result.error)
+      validatedUpdates.push({ match, result: result.value })
+    }
+
+    for (const update of validatedUpdates) {
+      Object.assign(update.match, update.result)
+    }
+
+    reconcileRandomTiebreakers(season)
+    touch(season)
+
+    return persisted(validatedUpdates.map((update) => update.match))
+  }
+
   function resetAllResults(seasonId: string): StoreMutationResult<Season> {
     const season = seasonById(seasonId)
 
@@ -379,6 +418,7 @@ export const useSeasonStore = defineStore('seasons', () => {
     setTeamsFromBulkInput,
     generateFixtures,
     updateMatchResult,
+    updateRoundResults,
     resetAllResults,
     regenerateFixtures,
     savePendingChanges,
