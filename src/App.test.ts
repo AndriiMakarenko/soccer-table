@@ -45,5 +45,8 @@ describe('application shell', () => {
     expect(
       screen.getByRole('button', { name: 'Create your first league' }),
     ).toBeEnabled()
+    expect(
+      screen.queryByRole('button', { name: 'Create league' }),
+    ).not.toBeInTheDocument()
   })
 })
