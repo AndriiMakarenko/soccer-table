@@ -67,7 +67,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## State Management
 
-- [ ] **T08 — Implement league and season CRUD stores with persistence**
+- [x] **T08 — Implement league and season CRUD stores with persistence**
   - Depends on T03.
   - Create Pinia stores for loading, creating, renaming, and deleting leagues and their seasons.
   - Keep league and season relationships consistent; deleting a league also removes its seasons after confirmation by the calling UI.
