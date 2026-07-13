@@ -120,6 +120,7 @@ const tableCaption = computed(
 <style scoped>
 .standings-board {
   width: min(100%, calc(40.5rem + 2px));
+  margin-inline: auto;
   overflow: hidden;
   border: 1px solid var(--color-line-strong);
   border-radius: 0.3rem;

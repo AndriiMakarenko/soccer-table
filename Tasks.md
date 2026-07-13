@@ -155,5 +155,6 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Cap the standings table at 40.5rem on wide screens so numeric columns retain a compact, consistent rhythm instead of stretching with the page.
   - Reduce the Team column from 16rem to 9.5rem, approximately 1.7 times narrower, while preserving readable club names and ellipsis behavior for longer names.
   - Constrain the standings page header to the table width so the season name aligns with the table's right edge instead of sitting at the far side of the viewport.
+  - Center the capped standings table and its matching header when the viewport is wider than the table.
   - Preserve contained horizontal scrolling on narrow screens without introducing page-level overflow.
   - Verify the layout at wide desktop and mobile viewport sizes with Playwright, then run the complete project check.
