@@ -8,6 +8,6 @@ export type StoreMutationResult<T> =
     }
   | {
       success: false
-      reason: 'validation' | 'not-found'
+      reason: 'validation' | 'not-found' | 'locked' | 'confirmation-required'
       message: string
     }
