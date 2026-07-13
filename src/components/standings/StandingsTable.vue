@@ -119,6 +119,7 @@ const tableCaption = computed(
 
 <style scoped>
 .standings-board {
+  width: min(100%, calc(40.5rem + 2px));
   overflow: hidden;
   border: 1px solid var(--color-line-strong);
   border-radius: 0.3rem;
@@ -187,8 +188,8 @@ const tableCaption = computed(
 }
 
 .standings-table {
-  width: 100%;
-  min-width: 47rem;
+  width: 40.5rem;
+  min-width: 40.5rem;
   border-collapse: collapse;
   table-layout: fixed;
   font-variant-numeric: tabular-nums;
@@ -233,7 +234,7 @@ const tableCaption = computed(
 }
 
 .team-column {
-  width: 16rem;
+  width: 9.5rem;
   text-align: left !important;
 }
 

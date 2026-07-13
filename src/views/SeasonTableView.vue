@@ -82,6 +82,7 @@ onMounted(() => {
 
 .page-header {
   display: grid;
+  width: min(100%, calc(40.5rem + 2px));
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 2rem;
