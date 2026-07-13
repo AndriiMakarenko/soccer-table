@@ -197,9 +197,11 @@ describe('season fixtures view', () => {
       screen.getByRole('button', { name: 'Save results for Round 1' }),
     )
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Storage is full. Your latest changes could not be saved.',
-    )
+    expect(
+      await screen.findByText(
+        'Storage is full. Your latest changes could not be saved.',
+      ),
+    ).toBeInTheDocument()
     expect(
       within(
         screen.getByLabelText('Northside FC versus Riverside United'),

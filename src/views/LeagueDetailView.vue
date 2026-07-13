@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
-import Message from 'primevue/message'
 import { computed, onMounted, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
 
 import ConfirmDeleteDialog from '@/components/management/ConfirmDeleteDialog.vue'
 import NameDialog from '@/components/management/NameDialog.vue'
 import SeasonCard from '@/components/management/SeasonCard.vue'
+import GlobalPersistenceError from '@/components/layout/GlobalPersistenceError.vue'
+import NotFoundState from '@/components/layout/NotFoundState.vue'
 import type { Season } from '@/domain/models'
 import { useLeagueStore } from '@/stores/league'
 import { useSeasonStore } from '@/stores/season'
@@ -59,15 +60,7 @@ function deleteSeason(): void {
       />
     </header>
 
-    <Message
-      v-if="seasonStore.saveError"
-      severity="error"
-      role="alert"
-      class="save-error"
-      @close="seasonStore.clearSaveError"
-    >
-      {{ seasonStore.saveError }}
-    </Message>
+    <GlobalPersistenceError fallback-only />
 
     <div v-if="seasons.length > 0" class="season-list" aria-label="Seasons">
       <SeasonCard
@@ -92,12 +85,12 @@ function deleteSeason(): void {
     </div>
   </section>
 
-  <section v-else class="not-found" aria-labelledby="missing-league-title">
-    <p class="eyebrow">League not found</p>
-    <h1 id="missing-league-title">This league is no longer on the board.</h1>
-    <p>It may have been deleted, or the link may be incorrect.</p>
-    <Button label="Return to leagues" :as="'router-link'" to="/" />
-  </section>
+  <NotFoundState
+    v-else
+    eyebrow="League not found"
+    title="This league is no longer on the board."
+    detail="It may have been deleted, or the link may be incorrect."
+  />
 
   <NameDialog
     :visible="Boolean(renameTarget)"
@@ -128,8 +121,7 @@ function deleteSeason(): void {
 </template>
 
 <style scoped>
-.league-page,
-.not-found {
+.league-page {
   padding-block: clamp(2.5rem, 6vw, 5rem);
 }
 
@@ -160,8 +152,7 @@ function deleteSeason(): void {
   text-transform: uppercase;
 }
 
-.league-header h1,
-.not-found h1 {
+.league-header h1 {
   max-width: 16ch;
   margin: 0.65rem 0 0;
   font-family: var(--font-headline);
@@ -171,15 +162,10 @@ function deleteSeason(): void {
   line-height: 0.96;
 }
 
-.league-header p:last-child,
-.not-found > p:not(.eyebrow) {
+.league-header p:last-child {
   margin: 1rem 0 0;
   color: var(--color-muted);
   line-height: 1.6;
-}
-
-.save-error {
-  margin-top: 1.25rem;
 }
 
 .season-list {
@@ -209,14 +195,6 @@ function deleteSeason(): void {
 .empty-state > p:not(.eyebrow) {
   margin: 0.9rem 0 1.35rem;
   color: var(--color-muted);
-}
-
-.not-found {
-  max-width: 48rem;
-}
-
-.not-found :deep(.p-button) {
-  margin-top: 1.5rem;
 }
 
 @media (max-width: 680px) {

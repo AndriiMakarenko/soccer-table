@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Button from 'primevue/button'
-import Message from 'primevue/message'
 import { computed, onMounted, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
 
 import ConfirmSeasonActionDialog from '@/components/seasons/ConfirmSeasonActionDialog.vue'
+import GlobalPersistenceError from '@/components/layout/GlobalPersistenceError.vue'
+import NotFoundState from '@/components/layout/NotFoundState.vue'
 import RegenerateFixturesDialog, {
   type RegenerateFixturesValues,
 } from '@/components/seasons/RegenerateFixturesDialog.vue'
@@ -131,15 +131,7 @@ function regenerateFixtures(values: RegenerateFixturesValues): void {
       </div>
     </header>
 
-    <Message
-      v-if="seasonStore.saveError"
-      severity="error"
-      role="alert"
-      class="save-error"
-      @close="seasonStore.clearSaveError"
-    >
-      {{ seasonStore.saveError }}
-    </Message>
+    <GlobalPersistenceError fallback-only />
 
     <section class="progress-sheet" aria-labelledby="progress-title">
       <div class="progress-heading">
@@ -188,14 +180,12 @@ function regenerateFixtures(values: RegenerateFixturesValues): void {
     />
   </section>
 
-  <section v-else class="not-found" aria-labelledby="missing-season-title">
-    <p class="eyebrow">Season not found</p>
-    <h1 id="missing-season-title">This season is no longer on the board.</h1>
-    <p>
-      The league or season may have been deleted, or the link may be incorrect.
-    </p>
-    <Button label="Return to leagues" :as="'router-link'" to="/" />
-  </section>
+  <NotFoundState
+    v-else
+    eyebrow="Season not found"
+    title="This season is no longer on the board."
+    detail="The league or season may have been deleted, or the link may be incorrect."
+  />
 
   <NameDialog
     v-model:visible="showRenameDialog"
@@ -225,8 +215,7 @@ function regenerateFixtures(values: RegenerateFixturesValues): void {
 </template>
 
 <style scoped>
-.season-overview,
-.not-found {
+.season-overview {
   padding-block: clamp(2.5rem, 6vw, 5rem);
 }
 
@@ -257,8 +246,7 @@ function regenerateFixtures(values: RegenerateFixturesValues): void {
   text-transform: uppercase;
 }
 
-.title-block h1,
-.not-found h1 {
+.title-block h1 {
   max-width: 14ch;
   margin: 0.65rem 0 0;
   font-family: var(--font-headline);
@@ -288,10 +276,6 @@ function regenerateFixtures(values: RegenerateFixturesValues): void {
   font: 600 0.65rem/1 var(--font-utility);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-}
-
-.save-error {
-  margin-top: 1.25rem;
 }
 
 .progress-sheet {
@@ -377,20 +361,6 @@ function regenerateFixtures(values: RegenerateFixturesValues): void {
 .destination-card > span:last-child {
   color: var(--color-floodlight);
   font-size: 0.82rem;
-}
-
-.not-found {
-  max-width: 48rem;
-}
-
-.not-found > p:not(.eyebrow) {
-  margin: 1rem 0 0;
-  color: var(--color-muted);
-  line-height: 1.6;
-}
-
-.not-found :deep(.p-button) {
-  margin-top: 1.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

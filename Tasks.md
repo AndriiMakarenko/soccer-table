@@ -132,7 +132,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Application Integration and Hardening
 
-- [ ] **T15 — Complete routing, navigation, and global error presentation**
+- [x] **T15 — Complete routing, navigation, and global error presentation**
   - Depends on T10–T14.
   - Wire all specified routes, breadcrumbs/back navigation, and sensible redirects after create/delete actions.
   - Add a consistent not-found experience for invalid URLs and deleted entities.

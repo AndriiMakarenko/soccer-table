@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
-import Message from 'primevue/message'
 import { computed, onMounted, shallowRef } from 'vue'
 
 import ConfirmDeleteDialog from '@/components/management/ConfirmDeleteDialog.vue'
+import GlobalPersistenceError from '@/components/layout/GlobalPersistenceError.vue'
 import LeagueCard from '@/components/management/LeagueCard.vue'
 import NameDialog from '@/components/management/NameDialog.vue'
 import type { League } from '@/domain/models'
@@ -66,15 +66,7 @@ function deleteLeague(): void {
       <Button label="Create league" @click="createDialogVisible = true" />
     </header>
 
-    <Message
-      v-if="leagueStore.saveError"
-      severity="error"
-      role="alert"
-      class="save-error"
-      @close="leagueStore.clearSaveError"
-    >
-      {{ leagueStore.saveError }}
-    </Message>
+    <GlobalPersistenceError fallback-only />
 
     <div
       v-if="leagueStore.leagues.length > 0"
@@ -182,10 +174,6 @@ function deleteLeague(): void {
   color: var(--color-soft);
   font-size: 1rem;
   line-height: 1.65;
-}
-
-.save-error {
-  margin-top: 1.25rem;
 }
 
 .league-list {
