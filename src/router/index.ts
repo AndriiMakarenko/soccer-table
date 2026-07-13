@@ -5,7 +5,7 @@ import LeagueDetailView from '@/views/LeagueDetailView.vue'
 import NewSeasonView from '@/views/NewSeasonView.vue'
 import SeasonOverviewView from '@/views/SeasonOverviewView.vue'
 import SeasonFixturesView from '@/views/SeasonFixturesView.vue'
-import SeasonRoutePlaceholderView from '@/views/SeasonRoutePlaceholderView.vue'
+import SeasonTableView from '@/views/SeasonTableView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,7 +38,7 @@ const router = createRouter({
     {
       path: '/leagues/:leagueId/seasons/:seasonId/table',
       name: 'season-table',
-      component: SeasonRoutePlaceholderView,
+      component: SeasonTableView,
     },
   ],
 })
