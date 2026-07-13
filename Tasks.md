@@ -110,7 +110,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Fixtures and Results UI
 
-- [ ] **T13 — Build grouped fixture display and round editing UI**
+- [x] **T13 — Build grouped fixture display and round editing UI**
   - Depends on T09 and T12.
   - Implement `/leagues/:leagueId/seasons/:seasonId/fixtures`, grouped by leg and round.
   - Render each round in a bordered dark panel with a strong left-aligned title and prominent right-aligned edit action.
