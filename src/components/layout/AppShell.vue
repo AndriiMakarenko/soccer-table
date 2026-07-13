@@ -36,7 +36,7 @@
   position: fixed;
   z-index: 10000;
   top: 0.75rem;
-  left: 0.75rem;
+  right: 0.75rem;
   padding: 0.7rem 1rem;
   border-radius: 0.35rem;
   background: var(--color-chalk);
@@ -133,6 +133,12 @@
 }
 
 @media (max-width: 640px) {
+  .skip-link {
+    right: 0.5rem;
+    padding-inline: 0.5rem;
+    font-size: 0.9rem;
+  }
+
   .shell-header {
     padding-inline: 1rem;
   }
@@ -140,6 +146,12 @@
     width: min(100% - 2rem, 76rem);
   }
   .local-badge {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-kicker {
     display: none;
   }
 }
