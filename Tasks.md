@@ -67,14 +67,14 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## State Management
 
-- [ ] **T08 — Implement league and season CRUD stores with persistence**
+- [x] **T08 — Implement league and season CRUD stores with persistence**
   - Depends on T03.
   - Create Pinia stores for loading, creating, renaming, and deleting leagues and their seasons.
   - Keep league and season relationships consistent; deleting a league also removes its seasons after confirmation by the calling UI.
   - Persist each successful mutation and expose save failures without discarding the current in-memory state.
   - Add store tests for CRUD, relationships, reload, and persistence failures.
 
-- [ ] **T09 — Implement team setup, fixture lifecycle, and result mutations in the season store**
+- [x] **T09 — Implement team setup, fixture lifecycle, and result mutations in the season store**
   - Depends on T04, T07, and T08.
   - Parse bulk team input by trimming lines and ignoring empty lines; reject duplicates, fewer than 2 teams, and more than 64 teams.
   - Generate 1–4 legs through the fixture generator and lock team editing once fixtures exist.
