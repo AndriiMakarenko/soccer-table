@@ -73,14 +73,14 @@ defineEmits<{
   padding: 1rem;
   border: 1px solid var(--color-line);
   border-radius: 0.9rem;
-  background: rgb(16 27 44 / 82%);
+  background: var(--color-panel);
   transition:
     border-color 160ms ease,
     transform 160ms ease;
 }
 
 .league-card:hover {
-  border-color: #38557e;
+  border-color: var(--color-line-strong);
   transform: translateY(-1px);
 }
 
@@ -89,9 +89,9 @@ defineEmits<{
   width: 4.8rem;
   min-height: 4.8rem;
   place-content: center;
-  border: 1px solid #38557e;
+  border: 1px solid var(--color-line-strong);
   border-radius: 0.65rem;
-  background: #0a1321;
+  background: var(--color-panel-deep);
   text-align: center;
 }
 

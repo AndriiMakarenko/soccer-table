@@ -179,7 +179,7 @@ function deleteLeague(): void {
 .dashboard-intro {
   max-width: 40rem;
   margin: 1.1rem 0 0;
-  color: #b9c5d7;
+  color: var(--color-soft);
   font-size: 1rem;
   line-height: 1.65;
 }
@@ -203,22 +203,26 @@ function deleteLeague(): void {
   padding: clamp(1.5rem, 4vw, 3rem);
   border: 1px solid var(--color-line);
   border-radius: 1rem;
-  background: linear-gradient(120deg, rgb(16 27 44 / 82%), rgb(10 19 33 / 75%));
+  background: linear-gradient(
+    120deg,
+    var(--color-panel),
+    var(--color-panel-deep)
+  );
 }
 
 .empty-pitch {
   position: relative;
   min-height: 15rem;
   overflow: hidden;
-  border: 1px solid #38557e;
+  border: 1px solid var(--color-line-strong);
   border-radius: 0.8rem;
-  background: #0a1321;
+  background: var(--color-panel-deep);
 }
 
 .empty-pitch::before {
   position: absolute;
   inset: 1rem;
-  border: 1px solid rgb(103 164 255 / 33%);
+  border: 1px solid rgb(100 168 220 / 30%);
   content: '';
 }
 
@@ -233,7 +237,7 @@ function deleteLeague(): void {
   top: 1rem;
   bottom: 1rem;
   left: 50%;
-  border-left: 1px solid rgb(103 164 255 / 33%);
+  border-left: 1px solid rgb(100 168 220 / 30%);
 }
 
 .centre-circle {
@@ -241,7 +245,7 @@ function deleteLeague(): void {
   left: 50%;
   width: 5rem;
   height: 5rem;
-  border: 1px solid rgb(103 164 255 / 33%);
+  border: 1px solid rgb(100 168 220 / 30%);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }

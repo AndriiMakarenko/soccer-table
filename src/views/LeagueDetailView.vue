@@ -187,15 +187,15 @@ function deleteSeason(): void {
   overflow: hidden;
   border: 1px solid var(--color-line);
   border-radius: 0.9rem;
-  background: rgb(16 27 44 / 78%);
+  background: var(--color-panel);
 }
 
 .empty-state {
   margin-top: 1.5rem;
   padding: clamp(2rem, 6vw, 4rem);
-  border: 1px dashed #38557e;
+  border: 1px dashed var(--color-line-strong);
   border-radius: 0.9rem;
-  background: rgb(16 27 44 / 58%);
+  background: var(--color-panel);
 }
 
 .empty-state h2 {

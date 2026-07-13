@@ -35,6 +35,8 @@ Use Vitest, Vue Testing Library, and `@testing-library/jest-dom`. Test user-visi
 
 Always create a GIVEN-WHEN-THEN JSDoc together with each test. `GIVEN` describes the preconditions, `WHEN` describes the triggering event, and `THEN` describes the expected outcome.
 
+For any tests that include interaction with the browser, use Playwright MCP.
+
 For UAT that includes clicking around a live instance of the application, assume the dev server is already up at `http://localhost:5173`. Only start it in the background terminal if you tried accessing the app and failed.
 
 ## Commit & Pull Request Guidelines

@@ -9,13 +9,18 @@
 }
 
 :root {
-  --color-night: #080d16;
-  --color-panel: #101b2c;
-  --color-chalk: #f4f7fb;
-  --color-muted: #8291a8;
-  --color-line: #233149;
-  --color-floodlight: #67a4ff;
-  --color-referee: #f2c15b;
+  --color-night: #0e1621;
+  --color-panel: #17212b;
+  --color-panel-raised: #1f2c38;
+  --color-panel-deep: #101923;
+  --color-chalk: #edf2f6;
+  --color-soft: #b6c1cb;
+  --color-muted: #7f91a4;
+  --color-line: #283747;
+  --color-line-strong: #334b5f;
+  --color-floodlight: #64a8dc;
+  --color-floodlight-strong: #2b5278;
+  --color-referee: #6ab3e8;
   --font-display:
     'Avenir Next Condensed', 'Arial Narrow', 'Inter Tight', sans-serif;
   --font-headline: 'Raleway', sans-serif;
