@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import DashboardView from '@/views/DashboardView.vue'
 import LeagueDetailView from '@/views/LeagueDetailView.vue'
+import NewSeasonView from '@/views/NewSeasonView.vue'
 import SeasonRoutePlaceholderView from '@/views/SeasonRoutePlaceholderView.vue'
 
 const router = createRouter({
@@ -20,7 +21,7 @@ const router = createRouter({
     {
       path: '/leagues/:leagueId/seasons/new',
       name: 'season-new',
-      component: SeasonRoutePlaceholderView,
+      component: NewSeasonView,
     },
     {
       path: '/leagues/:leagueId/seasons/:seasonId',

@@ -92,7 +92,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Use accessible PrimeVue controls and responsive dark-theme layout for desktop and tablet.
   - Add component tests for the main CRUD interactions and confirmations.
 
-- [ ] **T11 — Build season creation and team-entry flow**
+- [x] **T11 — Build season creation and team-entry flow**
   - Depends on T09 and T10.
   - Implement `/leagues/:leagueId/seasons/new` for season name, bulk team names, and number of legs.
   - Show clear validation for duplicate names, team-count limits, and invalid leg counts.
