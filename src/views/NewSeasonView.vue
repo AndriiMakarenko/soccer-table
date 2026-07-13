@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, nextTick, onMounted, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -7,6 +6,8 @@ import { useRoute, useRouter } from 'vue-router'
 import SeasonSetupForm, {
   type SeasonSetupValues,
 } from '@/components/seasons/SeasonSetupForm.vue'
+import GlobalPersistenceError from '@/components/layout/GlobalPersistenceError.vue'
+import NotFoundState from '@/components/layout/NotFoundState.vue'
 import { useLeagueStore } from '@/stores/league'
 import { useSeasonStore } from '@/stores/season'
 
@@ -94,8 +95,10 @@ async function openSeason(seasonId: string): Promise<void> {
       </p>
     </header>
 
+    <GlobalPersistenceError fallback-only />
+
     <Message
-      v-if="submissionError"
+      v-if="submissionError && submissionError !== seasonStore.saveError"
       severity="error"
       role="alert"
       class="submission-error"
@@ -111,17 +114,16 @@ async function openSeason(seasonId: string): Promise<void> {
     />
   </section>
 
-  <section v-else class="not-found" aria-labelledby="missing-league-title">
-    <p class="eyebrow">League not found</p>
-    <h1 id="missing-league-title">This league is no longer on the board.</h1>
-    <p>Return to the dashboard and choose an existing league.</p>
-    <Button label="Return to leagues" :as="'router-link'" to="/" />
-  </section>
+  <NotFoundState
+    v-else
+    eyebrow="League not found"
+    title="This league is no longer on the board."
+    detail="Return to the dashboard and choose an existing league."
+  />
 </template>
 
 <style scoped>
-.new-season,
-.not-found {
+.new-season {
   max-width: 56rem;
   padding-block: clamp(2.5rem, 6vw, 5rem);
 }
@@ -148,8 +150,7 @@ async function openSeason(seasonId: string): Promise<void> {
   margin-bottom: 1.75rem;
 }
 
-.setup-header h1,
-.not-found h1 {
+.setup-header h1 {
   margin: 0.65rem 0 0;
   font-family: var(--font-headline);
   font-size: clamp(2.8rem, 7vw, 5rem);
@@ -158,8 +159,7 @@ async function openSeason(seasonId: string): Promise<void> {
   line-height: 0.96;
 }
 
-.setup-header > p:last-child,
-.not-found > p:not(.eyebrow) {
+.setup-header > p:last-child {
   max-width: 44rem;
   margin: 1rem 0 0;
   color: var(--color-muted);
@@ -168,9 +168,5 @@ async function openSeason(seasonId: string): Promise<void> {
 
 .submission-error {
   margin-bottom: 1rem;
-}
-
-.not-found :deep(.p-button) {
-  margin-top: 1.5rem;
 }
 </style>

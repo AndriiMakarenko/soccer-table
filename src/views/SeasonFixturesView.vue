@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, onMounted, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
 
 import FixturesBoard from '@/components/fixtures/FixturesBoard.vue'
+import GlobalPersistenceError from '@/components/layout/GlobalPersistenceError.vue'
+import NotFoundState from '@/components/layout/NotFoundState.vue'
 import { useLeagueStore } from '@/stores/league'
 import { useSeasonStore, type RoundMatchResultInput } from '@/stores/season'
 
@@ -72,14 +73,8 @@ function saveRound(updates: RoundMatchResultInput[]): void {
       </div>
     </header>
 
-    <Message
-      v-if="seasonStore.saveError"
-      severity="error"
-      class="page-message"
-      @close="seasonStore.clearSaveError"
-    >
-      {{ seasonStore.saveError }}
-    </Message>
+    <GlobalPersistenceError fallback-only />
+
     <Message v-if="actionError" severity="error" class="page-message">
       {{ actionError }}
     </Message>
@@ -87,19 +82,16 @@ function saveRound(updates: RoundMatchResultInput[]): void {
     <FixturesBoard :season="season" @save-round="saveRound" />
   </section>
 
-  <section v-else class="not-found" aria-labelledby="missing-fixtures-title">
-    <p class="eyebrow">Fixtures not found</p>
-    <h1 id="missing-fixtures-title">This matchday board is unavailable.</h1>
-    <p>
-      The league or season may have been deleted, or the link may be incorrect.
-    </p>
-    <Button label="Return to leagues" :as="'router-link'" to="/" />
-  </section>
+  <NotFoundState
+    v-else
+    eyebrow="Fixtures not found"
+    title="This matchday board is unavailable."
+    detail="The league or season may have been deleted, or the link may be incorrect."
+  />
 </template>
 
 <style scoped>
-.fixtures-page,
-.not-found {
+.fixtures-page {
   padding-block: clamp(2.5rem, 6vw, 5rem);
 }
 
@@ -131,8 +123,7 @@ function saveRound(updates: RoundMatchResultInput[]): void {
   text-transform: uppercase;
 }
 
-.page-header h1,
-.not-found h1 {
+.page-header h1 {
   max-width: 13ch;
   margin: 0.65rem 0 0;
   font-family: var(--font-headline);
@@ -142,8 +133,7 @@ function saveRound(updates: RoundMatchResultInput[]): void {
   line-height: 0.88;
 }
 
-.page-intro,
-.not-found > p:not(.eyebrow) {
+.page-intro {
   max-width: 42rem;
   margin: 1.15rem 0 0;
   color: var(--color-soft);
@@ -170,14 +160,6 @@ function saveRound(updates: RoundMatchResultInput[]): void {
 
 .page-message {
   margin: -2rem 0 2rem;
-}
-
-.not-found {
-  max-width: 48rem;
-}
-
-.not-found :deep(.p-button) {
-  margin-top: 1.5rem;
 }
 
 @media (max-width: 720px) {

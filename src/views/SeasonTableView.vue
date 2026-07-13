@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Button from 'primevue/button'
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 import StandingsTable from '@/components/standings/StandingsTable.vue'
+import NotFoundState from '@/components/layout/NotFoundState.vue'
 import { useLeagueStore } from '@/stores/league'
 import { useSeasonStore } from '@/stores/season'
 
@@ -57,19 +57,16 @@ onMounted(() => {
     <StandingsTable :season="season" />
   </section>
 
-  <section v-else class="not-found" aria-labelledby="missing-table-title">
-    <p class="eyebrow">Standings not found</p>
-    <h1 id="missing-table-title">This competition table is unavailable.</h1>
-    <p>
-      The league or season may have been deleted, or the link may be incorrect.
-    </p>
-    <Button label="Return to leagues" :as="'router-link'" to="/" />
-  </section>
+  <NotFoundState
+    v-else
+    eyebrow="Standings not found"
+    title="This competition table is unavailable."
+    detail="The league or season may have been deleted, or the link may be incorrect."
+  />
 </template>
 
 <style scoped>
-.table-page,
-.not-found {
+.table-page {
   padding-block: clamp(2.5rem, 6vw, 5rem);
 }
 
@@ -101,8 +98,7 @@ onMounted(() => {
   text-transform: uppercase;
 }
 
-.page-header h1,
-.not-found h1 {
+.page-header h1 {
   max-width: 13ch;
   margin: 0.65rem 0 0;
   font-family: var(--font-headline);
@@ -112,8 +108,7 @@ onMounted(() => {
   line-height: 0.88;
 }
 
-.page-intro,
-.not-found > p:not(.eyebrow) {
+.page-intro {
   max-width: 42rem;
   margin: 1.15rem 0 0;
   color: var(--color-soft);
@@ -138,14 +133,6 @@ onMounted(() => {
   color: var(--color-chalk);
   font: 750 clamp(1.25rem, 3vw, 2rem)/1 var(--font-headline);
   text-align: right;
-}
-
-.not-found {
-  max-width: 48rem;
-}
-
-.not-found :deep(.p-button) {
-  margin-top: 1.5rem;
 }
 
 @media (max-width: 720px) {

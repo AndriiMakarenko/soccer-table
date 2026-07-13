@@ -135,6 +135,14 @@ describe('season fixtures view', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Northside FC score must be a non-negative integer',
     )
+    expect(
+      screen.getByRole('spinbutton', { name: 'Northside FC score' }),
+    ).toHaveAttribute('aria-invalid', 'true')
+    expect(
+      screen.getByRole('spinbutton', { name: 'Northside FC score' }),
+    ).toHaveAccessibleDescription(
+      'Northside FC score must be a non-negative integer',
+    )
     expect(state.seasons[0]?.matches[0]).toMatchObject({
       homeScore: null,
       awayScore: null,
@@ -197,9 +205,11 @@ describe('season fixtures view', () => {
       screen.getByRole('button', { name: 'Save results for Round 1' }),
     )
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Storage is full. Your latest changes could not be saved.',
-    )
+    expect(
+      await screen.findByText(
+        'Storage is full. Your latest changes could not be saved.',
+      ),
+    ).toBeInTheDocument()
     expect(
       within(
         screen.getByLabelText('Northside FC versus Riverside United'),

@@ -132,7 +132,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Application Integration and Hardening
 
-- [ ] **T15 — Complete routing, navigation, and global error presentation**
+- [x] **T15 — Complete routing, navigation, and global error presentation**
   - Depends on T10–T14.
   - Wire all specified routes, breadcrumbs/back navigation, and sensible redirects after create/delete actions.
   - Add a consistent not-found experience for invalid URLs and deleted entities.
@@ -140,7 +140,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Confirm a reload restores leagues, seasons, fixtures, results, cards, and locked random tiebreakers.
   - Add integration tests for representative navigation, reload restoration, invalid routes, and quota-error presentation.
 
-- [ ] **T16 — Perform final responsive UI polish and accessibility pass**
+- [x] **T16 — Perform final responsive UI polish and accessibility pass**
   - Depends on T15.
   - Apply a cohesive dark visual system using PrimeVue for controls and Tailwind for spacing/layout.
   - Verify fixture score controls stay centered, round actions remain prominent, and standings remain scan-friendly at desktop and tablet widths.
