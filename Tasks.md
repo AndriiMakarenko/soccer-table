@@ -179,18 +179,10 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Deno Desktop and SQLite Migration
 
-Complete these tasks in order. Each top-level task is deliberately scoped to one agent run and must leave the repository in a verified, usable state. The target platforms are macOS and Windows. Include Linux only when the chosen WebView and packaging implementation works without a separate platform-specific engineering path. Use a Deno-native WebView first; adopt a Deno-hosted CEF shell only if T20 records a blocking WebView limitation and the fallback is approved.
-
-- [ ] **T20 — Prove the Deno-native desktop architecture on macOS and Windows**
-  - Record an architecture decision covering the Deno-only toolchain, Deno-native WebView host, Vue renderer, typed host/renderer bridge, SQLite ownership, application-data paths, and process lifecycle.
-  - Build a minimal throwaway spike that opens the compiled Vue application in a native window and completes one typed request/response across the WebView bridge.
-  - Verify the WebView dependency and native libraries can be installed and launched on both macOS and Windows, documenting OS prerequisites and whether Linux works with the same approach.
-  - Evaluate navigation restrictions, local asset loading, Content Security Policy support, bridge error propagation, window shutdown, and compatibility with the current PrimeVue/Tailwind UI.
-  - Define measurable fallback criteria for moving to Deno + CEF; do not introduce CEF unless the spike meets one of those criteria and the fallback is explicitly approved.
-  - Remove throwaway code after capturing a reproducible smoke command and the decision outcome.
+Complete these tasks in order. Each top-level task is deliberately scoped to one agent run and must leave the repository in a verified, usable state. Complete the architecture research and record its decision in `DenoDesktopResearch.md` before starting T21. Prepare production WebView builds for macOS and Windows. Run agentic desktop tests on the macOS development machine against test builds that use the CEF backend with Playwright MCP support. Use a Deno-native WebView for production unless the research records a blocking limitation and the production CEF fallback is approved.
 
 - [ ] **T21 — Replace pnpm and Node project tooling with Deno**
-  - Depends on T20 succeeding with the selected desktop shell.
+  - Depends on an approved architecture decision in `DenoDesktopResearch.md`.
   - Add `deno.json` with pinned imports, permissions, compiler options, formatting/linting rules, and Deno tasks for development, testing, type checking, building, and the complete verification suite.
   - Run Vite, Vue, Tailwind, PrimeVue, Pinia, Vue Router, Vitest, Vue Test Utils, and Testing Library through Deno's supported npm compatibility without requiring a system Node installation or pnpm.
   - Replace Node-specific configuration APIs and type dependencies with Deno/Web-standard equivalents while preserving the `@` source alias and strict TypeScript behavior.
@@ -205,7 +197,7 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Define serializable request, success, and error contracts with request IDs, runtime validation, and predictable handling for malformed messages, unavailable host methods, and native exceptions.
   - Restrict external navigation, new-window behavior, arbitrary script execution, filesystem access, and Deno permissions to the minimum needed by the application.
   - Provide separate development and production startup tasks and ensure production never depends on the Vite development server.
-  - Add Deno tests for bridge dispatch, validation, error mapping, and security boundaries, plus a desktop smoke test that opens and closes the application cleanly.
+  - Add Deno tests for bridge dispatch, validation, error mapping, and security boundaries.
 
 - [ ] **T23 — Add versioned SQLite schema management and database lifecycle**
   - Depends on T22.
@@ -234,38 +226,36 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Supply an injectable in-memory persistence adapter for unit/component tests so Vue tests do not require a native window or real database.
   - Update all affected tests with GIVEN-WHEN-THEN JSDoc and cover hydration, successful writes, write ordering, retries, unavailable host behavior, and persistence failures.
 
-- [ ] **T26 — Import existing browser localStorage data into SQLite once**
+- [ ] **T26 — Add desktop lifecycle UX and recoverable persistence failures**
   - Depends on T25.
-  - On the first eligible desktop launch, detect the versioned legacy localStorage payload and validate it using the existing domain and corruption safeguards before importing it.
-  - Import valid data into SQLite in one transaction without overwriting a non-empty database or duplicating records after an interrupted/repeated launch.
-  - Record durable migration status and retain the legacy payload until the SQLite commit succeeds; provide clear recovery behavior for malformed data or database failure.
-  - Remove normal runtime dependence on localStorage after the one-time importer has run, and document when the importer can be removed in a future release.
-  - Add tests for no legacy data, valid import, corrupted data, non-empty database, repeated launch, transaction rollback, and preservation of random tiebreaker locks.
-
-- [ ] **T27 — Add desktop lifecycle UX and recoverable persistence failures**
-  - Depends on T26.
   - Add an application startup state while the native bridge and database initialize, and prevent CRUD routes from operating against unhydrated state.
   - Present actionable desktop-specific errors for database open, migration, lock/busy, disk-full, permission, corruption, and bridge failures without discarding recoverable in-memory/form state.
   - Ensure closing the window waits for or safely resolves pending writes, and make shutdown failure behavior explicit without allowing write reordering or silent loss.
   - Handle unsupported direct browser launches with a useful message instead of failing on a missing desktop bridge.
   - Add component/integration tests for startup, retry, pending-save shutdown coordination, and global error presentation, each with GIVEN-WHEN-THEN JSDoc.
-  - Use Playwright MCP against the live renderer for browser interactions and the desktop smoke harness for native lifecycle coverage.
+  - Reserve full desktop interaction coverage for the CEF test build introduced in T27.
+
+- [ ] **T27 — Add a Playwright-attachable CEF desktop test build**
+  - Depends on T26.
+  - Add a test-only CEF/Chromium backend that runs the same compiled renderer, typed bridge, SQLite host operations, and lifecycle contracts as the production Deno-native WebView host.
+  - Enable a loopback-only Chrome DevTools Protocol endpoint with a dynamically allocated port and make the test harness report readiness without exposing remote debugging in production builds.
+  - Keep backend-specific window and messaging code behind a shared host interface so tests exercise production application behavior rather than a separate mock implementation.
+  - Configure Playwright MCP to attach to the test build over CDP and cover representative CRUD, fixture/result editing, standings, reload restoration, persistence errors, and shutdown behavior.
+  - Add a guard that fails packaging if inspector flags, the CDP endpoint, or test-only CEF resources are enabled in a production artifact.
 
 - [ ] **T28 — Build reproducible macOS and Windows desktop artifacts with Deno**
   - Depends on T27.
   - Add Deno tasks that produce self-contained release artifacts containing the compiled host, bundled renderer, icons/resources, and required native WebView libraries without requiring Deno, Node, or pnpm on the user's machine.
   - Package a macOS application bundle and a Windows application package/installer with stable application identifiers, version metadata, icons, and platform-appropriate `db.sqlite` paths.
   - Ensure upgrades preserve the user database and uninstallation behavior is documented; never place mutable state inside signed or read-only application resources.
-  - Document and automate the available signing/notarization steps using externally supplied credentials, while keeping unsigned local builds possible for development verification.
-  - Generate checksums and a release manifest, and verify artifacts from clean macOS and Windows environments.
-  - Add Linux packaging only if it reuses the same host and build flow without new platform-specific product work; otherwise document Linux as deferred.
+  - Document and automate the available signing/notarization steps using externally supplied credentials, while keeping unsigned local builds available for development use.
+  - Generate checksums and a release manifest for the prepared macOS and Windows artifacts.
 
-- [ ] **T29 — Complete cross-platform migration verification and documentation**
+- [ ] **T29 — Complete agentic migration verification and documentation**
   - Depends on T28.
   - Run the full Deno verification suite and confirm no project command, source import, generated artifact, or documentation requires pnpm, Node, Electron, Tauri, localStorage persistence, or a development server in production.
-  - On clean macOS and Windows environments, verify install, first launch, CRUD, fixture generation, result/card editing, standings, reload restoration, random-lock stability, upgrade preservation, and uninstall/reinstall behavior as applicable.
-  - Verify legacy localStorage import with representative valid and corrupted payloads and confirm `db.sqlite` is created only in the documented per-user location.
-  - Exercise database lock, disk/write failure, bridge failure, and interrupted-shutdown recovery without silent data loss.
-  - Run accessibility and responsive UAT for the WebView at supported desktop sizes and capture screenshots for the visual migration review.
+  - Through Playwright MCP on the macOS CEF test build, verify first launch, CRUD, fixture generation, result/card editing, standings, reload restoration, random-lock stability, persistence failures, and shutdown coordination.
+  - Confirm through the CEF test build that `db.sqlite` is created only in the documented per-user location and that no application state is stored in localStorage.
+  - Exercise database lock, disk/write failure, bridge failure, and interrupted-shutdown recovery without silent data loss through automated Deno tests or the CEF test build.
+  - Run accessibility and responsive UAT through Playwright MCP against the CEF test build and capture screenshots for visual review.
   - Update `README.md`, `PRD.md`, and repository guidance to describe the desktop product, Deno workflow, SQLite persistence, platform prerequisites, backup location, troubleshooting, and release process.
-  - Mark T20–T29 complete only after all automated checks and macOS/Windows UAT evidence are recorded.
