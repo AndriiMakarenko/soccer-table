@@ -82,18 +82,18 @@ const roundsByLeg = computed(() => {
 }
 
 .fixtures-board {
-  gap: clamp(3rem, 7vw, 5rem);
+  gap: clamp(1.5rem, 3.5vw, 2.5rem);
 }
 
 .leg-group {
-  gap: 1.1rem;
+  gap: 0.55rem;
 }
 
 .leg-header {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: baseline;
-  gap: 0.85rem;
+  gap: 0.45rem;
   padding-inline: 0.15rem;
 }
 
@@ -101,7 +101,7 @@ const roundsByLeg = computed(() => {
 .leg-header span {
   margin: 0;
   color: var(--color-muted);
-  font: 600 0.65rem/1 var(--font-utility);
+  font: 600 0.58rem/1 var(--font-utility);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -109,7 +109,7 @@ const roundsByLeg = computed(() => {
 .leg-header h2 {
   margin: 0;
   font-family: var(--font-headline);
-  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  font-size: clamp(1.2rem, 2.5vw, 1.55rem);
   letter-spacing: -0.04em;
 }
 
@@ -126,7 +126,7 @@ const roundsByLeg = computed(() => {
 }
 
 .round-list {
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 @media (max-width: 520px) {

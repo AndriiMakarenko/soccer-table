@@ -330,18 +330,18 @@ function resetDrafts(): void {
 .round-panel {
   overflow: hidden;
   border: 1px solid var(--color-line-strong);
-  border-radius: 0.85rem;
+  border-radius: 0.55rem;
   background: var(--color-panel-deep);
-  box-shadow: 0 1.2rem 3rem rgb(0 0 0 / 12%);
+  box-shadow: 0 0.6rem 1.5rem rgb(0 0 0 / 12%);
 }
 
 .round-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  min-height: 5.25rem;
-  padding: 1rem clamp(1rem, 3vw, 1.5rem);
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0.45rem clamp(0.65rem, 2vw, 0.85rem);
   border-bottom: 1px solid var(--color-line-strong);
   background: var(--color-panel-raised);
 }
@@ -349,12 +349,12 @@ function resetDrafts(): void {
 .round-identity {
   display: flex;
   align-items: baseline;
-  gap: 0.85rem;
+  gap: 0.5rem;
 }
 
 .round-identity span {
   color: var(--color-floodlight);
-  font: 700 0.64rem/1 var(--font-utility);
+  font: 700 0.58rem/1 var(--font-utility);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -362,7 +362,7 @@ function resetDrafts(): void {
 .round-identity h3 {
   margin: 0;
   font-family: var(--font-headline);
-  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
   font-weight: 800;
   letter-spacing: -0.035em;
 }
@@ -375,19 +375,21 @@ function resetDrafts(): void {
 }
 
 .round-actions :deep(.p-button) {
-  min-height: 2.75rem;
+  min-height: 2.25rem;
+  padding-block: 0.35rem;
+  font-size: 0.72rem;
 }
 
 .round-error {
-  margin: 0.8rem 1.25rem 0;
+  margin: 0.4rem 0.75rem 0;
 }
 
 .fixture-list {
-  padding-inline: clamp(1rem, 3vw, 1.5rem);
+  padding-inline: clamp(0.65rem, 2vw, 0.85rem);
 }
 
 .fixture-row {
-  padding-block: clamp(1.25rem, 3vw, 1.8rem);
+  padding-block: clamp(0.55rem, 1.4vw, 0.75rem);
   border-bottom: 1px solid var(--color-line);
 }
 
@@ -397,15 +399,15 @@ function resetDrafts(): void {
 
 .scoreline {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(8rem, auto) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(6.75rem, auto) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(0.75rem, 3vw, 2rem);
+  gap: clamp(0.4rem, 1.5vw, 1rem);
 }
 
 .team-name {
   overflow: hidden;
   font-family: var(--font-headline);
-  font-size: clamp(1.05rem, 2.6vw, 1.5rem);
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
   font-weight: 700;
   line-height: 1.15;
   text-overflow: ellipsis;
@@ -421,21 +423,21 @@ function resetDrafts(): void {
 
 .score-center {
   display: grid;
-  grid-template-columns: 3.25rem 1rem 3.25rem;
+  grid-template-columns: 2.5rem 0.75rem 2.5rem;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .score-value,
 .score-input {
-  width: 3.25rem;
-  height: 3.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border: 1px solid var(--color-line-strong);
-  border-radius: 0.45rem;
+  border-radius: 0.35rem;
   background: var(--color-panel);
   color: var(--color-chalk);
-  font: 750 1.15rem/1 var(--font-utility);
+  font: 750 0.9rem/1 var(--font-utility);
   text-align: center;
 }
 
@@ -462,30 +464,31 @@ function resetDrafts(): void {
 .discipline-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  max-width: 46rem;
-  margin: 1.25rem auto 0;
-  padding: 1rem;
+  gap: 0.4rem;
+  max-width: 40rem;
+  margin: 0.55rem auto 0;
+  padding: 0.5rem;
   border: 1px solid var(--color-line);
-  border-radius: 0.6rem;
+  border-radius: 0.4rem;
   background: var(--color-panel);
   min-inline-size: 0;
 }
 
 .discipline-grid label {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.25rem;
 }
 
 .discipline-grid span {
   color: var(--color-muted);
-  font: 600 0.63rem/1.35 var(--font-utility);
+  font: 600 0.56rem/1.25 var(--font-utility);
 }
 
 .discipline-grid input {
   width: 100%;
   min-width: 0;
-  padding: 0.55rem;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.45rem;
   border: 1px solid var(--color-line-strong);
   border-radius: 0.35rem;
   background: var(--color-panel-deep);
@@ -502,19 +505,19 @@ function resetDrafts(): void {
   }
 
   .scoreline {
-    grid-template-columns: minmax(0, 1fr) 7rem minmax(0, 1fr);
-    gap: 0.5rem;
+    grid-template-columns: minmax(0, 1fr) 6.25rem minmax(0, 1fr);
+    gap: 0.35rem;
   }
 
   .score-center {
-    grid-template-columns: 2.75rem 0.5rem 2.75rem;
-    gap: 0.25rem;
+    grid-template-columns: 2.25rem 0.5rem 2.25rem;
+    gap: 0.2rem;
   }
 
   .score-value,
   .score-input {
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.25rem;
+    height: 2.25rem;
   }
 
   .discipline-grid {
@@ -532,7 +535,7 @@ function resetDrafts(): void {
   }
 
   .team-name {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
   }
 }
 </style>

@@ -92,12 +92,12 @@ function saveRound(updates: RoundMatchResultInput[]): void {
 
 <style scoped>
 .fixtures-page {
-  padding-block: clamp(2.5rem, 6vw, 5rem);
+  padding-block: clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   color: var(--color-floodlight);
   font: 700 0.76rem/1 var(--font-utility);
   letter-spacing: 0.05em;
@@ -109,9 +109,9 @@ function saveRound(updates: RoundMatchResultInput[]): void {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
-  gap: 2rem;
-  margin-bottom: clamp(2.5rem, 6vw, 4rem);
-  padding-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: clamp(1.25rem, 3vw, 2rem);
+  padding-bottom: 1rem;
   border-bottom: 1px solid var(--color-line);
 }
 
@@ -127,7 +127,7 @@ function saveRound(updates: RoundMatchResultInput[]): void {
   max-width: 13ch;
   margin: 0.65rem 0 0;
   font-family: var(--font-headline);
-  font-size: clamp(3rem, 8vw, 6.4rem);
+  font-size: clamp(2.1rem, 5vw, 3.75rem);
   font-weight: 800;
   letter-spacing: -0.06em;
   line-height: 0.88;
@@ -135,20 +135,21 @@ function saveRound(updates: RoundMatchResultInput[]): void {
 
 .page-intro {
   max-width: 42rem;
-  margin: 1.15rem 0 0;
+  margin: 0.6rem 0 0;
   color: var(--color-soft);
-  line-height: 1.65;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .fixture-tally {
   display: grid;
   justify-items: end;
-  gap: 0.35rem;
+  gap: 0.2rem;
 }
 
 .fixture-tally strong {
   color: var(--color-floodlight);
-  font: 750 clamp(2.2rem, 6vw, 4.2rem)/0.9 var(--font-utility);
+  font: 750 clamp(1.6rem, 3.5vw, 2.5rem)/0.9 var(--font-utility);
 }
 
 .fixture-tally span {
@@ -159,7 +160,7 @@ function saveRound(updates: RoundMatchResultInput[]): void {
 }
 
 .page-message {
-  margin: -2rem 0 2rem;
+  margin: -1rem 0 1rem;
 }
 
 @media (max-width: 720px) {

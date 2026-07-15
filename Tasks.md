@@ -147,3 +147,115 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Add labels, focus states, keyboard access, semantic headings/tables, and adequate contrast for primary workflows.
   - Remove placeholder UI and verify empty, loading, validation, confirmation, and failure states are visually consistent.
   - Run the complete typecheck, unit/component test suite, and production build; manually smoke-test the acceptance criteria in `PRD.md`.
+
+## Follow-up UI Refinements
+
+- [x] **T17 — Constrain standings table width and tighten column spacing**
+  - Depends on T14.
+  - Cap the standings table at 40.5rem on wide screens so numeric columns retain a compact, consistent rhythm instead of stretching with the page.
+  - Reduce the Team column from 16rem to 9.5rem, approximately 1.7 times narrower, while preserving readable club names and ellipsis behavior for longer names.
+  - Constrain the standings page header to the table width so the season name aligns with the table's right edge instead of sitting at the far side of the viewport.
+  - Center the capped standings table and its matching header when the viewport is wider than the table.
+  - Preserve contained horizontal scrolling on narrow screens without introducing page-level overflow.
+  - Verify the layout at wide desktop and mobile viewport sizes with Playwright, then run the complete project check.
+
+- [x] **T18 — Balance home and away assignments in generated fixtures**
+  - Depends on T04 and T09.
+  - Replace fully random home/away assignment during fixture generation with a schedule that aims for each team to alternate between home and away matches throughout the season.
+  - Prefer a `home, away, home, away` sequence (or its inverse) for every team whenever the round-robin constraints allow it.
+  - Allow no more than two consecutive home or two consecutive away matches when strict alternation is not possible.
+  - Preserve the existing guarantees for pair uniqueness, round participation, leg count, BYE handling, and home/away reversal across legs.
+  - Add focused fixture-generator tests covering even and odd team counts, unavoidable two-match home/away runs, multiple legs, and the absence of runs longer than two matches.
+  - Run the complete project check after implementation.
+
+- [x] **T19 — Make the fixture rounds view approximately twice as compact**
+  - Depends on T13.
+  - Reduce the overall size of the rounds/results editing view by approximately 50% so substantially more rounds and fixtures fit within the viewport.
+  - Scale down round panels, titles, fixture rows, team names, score and card controls, edit actions, and other elements while preserving readability and usability.
+  - Reduce vertical padding, margins, and gaps within and between round panels and fixture rows by approximately half.
+  - Keep score controls aligned, editing actions discoverable, and touch/click targets practical at supported desktop and tablet viewport sizes.
+  - Preserve responsive behavior, validation feedback, and contained overflow without changing fixture-result editing behavior.
+  - Add or update focused component tests where markup or user-visible behavior changes, verify the denser layout with Playwright at desktop and tablet viewport sizes, then run the complete project check.
+
+## Deno Desktop and SQLite Migration
+
+Complete these tasks in order. Each top-level task is deliberately scoped to one agent run and must leave the repository in a verified, usable state. Complete the architecture research and record its decision in `DenoDesktopResearch.md` before starting T21. Prepare production WebView builds for macOS and Windows. Run agentic desktop tests on the macOS development machine against test builds that use the CEF backend with Playwright MCP support. Use a Deno-native WebView for production unless the research records a blocking limitation and the production CEF fallback is approved.
+
+- [ ] **T21 — Replace pnpm and Node project tooling with Deno**
+  - Depends on an approved architecture decision in `DenoDesktopResearch.md`.
+  - Add `deno.json` with pinned imports, permissions, compiler options, formatting/linting rules, and Deno tasks for development, testing, type checking, building, and the complete verification suite.
+  - Run Vite, Vue, Tailwind, PrimeVue, Pinia, Vue Router, Vitest, Vue Test Utils, and Testing Library through Deno's supported npm compatibility without requiring a system Node installation or pnpm.
+  - Replace Node-specific configuration APIs and type dependencies with Deno/Web-standard equivalents while preserving the `@` source alias and strict TypeScript behavior.
+  - Migrate the lockfile to `deno.lock`, then remove `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, Node-only tsconfig files, and obsolete pnpm/node_modules ignores once no command depends on them.
+  - Update repository instructions and developer documentation to use only `deno task ...` commands.
+  - Run the Deno format check, lint, type check, existing test suite, and renderer production build from a clean dependency cache.
+
+- [ ] **T22 — Create the production Deno desktop host and typed bridge**
+  - Depends on T21.
+  - Add a focused desktop host that creates and owns the native WebView window, serves or loads bundled renderer assets, handles startup/shutdown, and exposes only an allowlisted typed bridge.
+  - Keep Vue components and route views unaware of WebView implementation details by placing bridge access behind a renderer-side service interface.
+  - Define serializable request, success, and error contracts with request IDs, runtime validation, and predictable handling for malformed messages, unavailable host methods, and native exceptions.
+  - Restrict external navigation, new-window behavior, arbitrary script execution, filesystem access, and Deno permissions to the minimum needed by the application.
+  - Provide separate development and production startup tasks and ensure production never depends on the Vite development server.
+  - Add Deno tests for bridge dispatch, validation, error mapping, and security boundaries.
+
+- [ ] **T23 — Add versioned SQLite schema management and database lifecycle**
+  - Depends on T22.
+  - Integrate a Deno-compatible SQLite driver and create `db.sqlite` in the platform-appropriate per-user application-data directory rather than the installation directory.
+  - Define a normalized, foreign-keyed schema for leagues, seasons, teams, matches, and locked random tiebreaker data, preserving IDs, timestamps, nullable scores, card defaults, ordering, and league/season relationships.
+  - Add a schema-version table and ordered, transactional migrations that are safe to rerun and reject unsupported future schema versions without modifying the database.
+  - Configure foreign keys and appropriate durability settings; use transactions so multi-entity mutations cannot be partially saved.
+  - Handle first run, existing database, corrupt/unopenable database, locked database, migration failure, and clean shutdown with typed errors and no silent data loss.
+  - Add Deno tests against isolated temporary databases for schema creation, constraints, migration idempotency, rollback, reopening, and failure cases.
+
+- [ ] **T24 — Implement and test SQLite repositories for complete application state**
+  - Depends on T23.
+  - Add repositories that load the complete typed `AppState` and atomically persist every league, season, team, fixture, result, card count, and random tiebreaker lock.
+  - Preserve deterministic collection ordering and exact `null`/zero semantics when mapping between SQLite rows and domain models.
+  - Prevent orphaned rows with database constraints and implement league deletion, season deletion, fixture regeneration, round result updates, and result resets as transactions.
+  - Keep SQL, row mapping, and connection management inside the host; expose application-oriented operations rather than arbitrary SQL through the WebView bridge.
+  - Map constraint, busy/locked, disk-full, permission, corruption, and unexpected I/O failures to stable error codes and actionable user-facing messages.
+  - Add focused Deno tests for round trips, cascades, atomic rollback, ordering, null values, tiebreaker locks, and each important failure mapping.
+
+- [ ] **T25 — Replace synchronous localStorage persistence with asynchronous desktop persistence**
+  - Depends on T24.
+  - Replace `src/services/storage.ts` with an asynchronous persistence service backed by the typed desktop bridge; no production application state may be read from or written to localStorage.
+  - Adapt Pinia hydration and mutations to await persistence, prevent overlapping writes from committing out of order, and expose explicit loading, saving, success, and failure states.
+  - Preserve accepted in-memory edits when a save fails, disable or serialize conflicting actions where necessary, and replace browser-quota wording with accurate SQLite/disk error feedback.
+  - Keep route-level views thin and retain the current component props/events boundaries while updating UI actions to handle asynchronous completion and duplicate submission safely.
+  - Supply an injectable in-memory persistence adapter for unit/component tests so Vue tests do not require a native window or real database.
+  - Update all affected tests with GIVEN-WHEN-THEN JSDoc and cover hydration, successful writes, write ordering, retries, unavailable host behavior, and persistence failures.
+
+- [ ] **T26 — Add desktop lifecycle UX and recoverable persistence failures**
+  - Depends on T25.
+  - Add an application startup state while the native bridge and database initialize, and prevent CRUD routes from operating against unhydrated state.
+  - Present actionable desktop-specific errors for database open, migration, lock/busy, disk-full, permission, corruption, and bridge failures without discarding recoverable in-memory/form state.
+  - Ensure closing the window waits for or safely resolves pending writes, and make shutdown failure behavior explicit without allowing write reordering or silent loss.
+  - Handle unsupported direct browser launches with a useful message instead of failing on a missing desktop bridge.
+  - Add component/integration tests for startup, retry, pending-save shutdown coordination, and global error presentation, each with GIVEN-WHEN-THEN JSDoc.
+  - Reserve full desktop interaction coverage for the CEF test build introduced in T27.
+
+- [ ] **T27 — Add a Playwright-attachable CEF desktop test build**
+  - Depends on T26.
+  - Add a test-only CEF/Chromium backend that runs the same compiled renderer, typed bridge, SQLite host operations, and lifecycle contracts as the production Deno-native WebView host.
+  - Enable a loopback-only Chrome DevTools Protocol endpoint with a dynamically allocated port and make the test harness report readiness without exposing remote debugging in production builds.
+  - Keep backend-specific window and messaging code behind a shared host interface so tests exercise production application behavior rather than a separate mock implementation.
+  - Configure Playwright MCP to attach to the test build over CDP and cover representative CRUD, fixture/result editing, standings, reload restoration, persistence errors, and shutdown behavior.
+  - Add a guard that fails packaging if inspector flags, the CDP endpoint, or test-only CEF resources are enabled in a production artifact.
+
+- [ ] **T28 — Build reproducible macOS and Windows desktop artifacts with Deno**
+  - Depends on T27.
+  - Add Deno tasks that produce self-contained release artifacts containing the compiled host, bundled renderer, icons/resources, and required native WebView libraries without requiring Deno, Node, or pnpm on the user's machine.
+  - Package a macOS application bundle and a Windows application package/installer with stable application identifiers, version metadata, icons, and platform-appropriate `db.sqlite` paths.
+  - Ensure upgrades preserve the user database and uninstallation behavior is documented; never place mutable state inside signed or read-only application resources.
+  - Document and automate the available signing/notarization steps using externally supplied credentials, while keeping unsigned local builds available for development use.
+  - Generate checksums and a release manifest for the prepared macOS and Windows artifacts.
+
+- [ ] **T29 — Complete agentic migration verification and documentation**
+  - Depends on T28.
+  - Run the full Deno verification suite and confirm no project command, source import, generated artifact, or documentation requires pnpm, Node, Electron, Tauri, localStorage persistence, or a development server in production.
+  - Through Playwright MCP on the macOS CEF test build, verify first launch, CRUD, fixture generation, result/card editing, standings, reload restoration, random-lock stability, persistence failures, and shutdown coordination.
+  - Confirm through the CEF test build that `db.sqlite` is created only in the documented per-user location and that no application state is stored in localStorage.
+  - Exercise database lock, disk/write failure, bridge failure, and interrupted-shutdown recovery without silent data loss through automated Deno tests or the CEF test build.
+  - Run accessibility and responsive UAT through Playwright MCP against the CEF test build and capture screenshots for visual review.
+  - Update `README.md`, `PRD.md`, and repository guidance to describe the desktop product, Deno workflow, SQLite persistence, platform prerequisites, backup location, troubleshooting, and release process.
