@@ -11,6 +11,8 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "tauri:dev": "cargo tauri dev",
+    "tauri:build": "cargo tauri build",
     "typecheck": "vue-tsc -b",
     "test": "vitest run",
     "test:watch": "vitest"

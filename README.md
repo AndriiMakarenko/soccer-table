@@ -8,6 +8,19 @@ Soccer Table is a browser-based round robin tournament manager. It will let you 
 
 ## Development commands
 
+### Prerequisites
+
+Install pnpm, the Rust toolchain, and the Tauri v2 CLI. The desktop commands use
+the Cargo-installed CLI directly:
+
+```bash
+cargo install tauri-cli --version "^2"
+cargo tauri -V
+```
+
+The version command must report Tauri CLI 2.x. Platform-specific Tauri build
+dependencies may also be required; macOS uses the Xcode command-line tools.
+
 Install the project dependencies:
 
 ```bash
@@ -21,6 +34,18 @@ pnpm dev
 ```
 
 Vite will print the local address, usually <http://localhost:5173>.
+
+Start the application in its native Tauri development window:
+
+```bash
+pnpm tauri:dev
+```
+
+Build the renderer and native desktop bundles:
+
+```bash
+pnpm tauri:build
+```
 
 Run the TypeScript checks:
 

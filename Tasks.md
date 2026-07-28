@@ -177,85 +177,83 @@ Complete tasks in order unless a task explicitly says it can run independently. 
   - Preserve responsive behavior, validation feedback, and contained overflow without changing fixture-result editing behavior.
   - Add or update focused component tests where markup or user-visible behavior changes, verify the denser layout with Playwright at desktop and tablet viewport sizes, then run the complete project check.
 
-## Deno Desktop and SQLite Migration
+## Tauri v2 Desktop and SQLite Migration
 
-Complete these tasks in order. Each top-level task is deliberately scoped to one agent run and must leave the repository in a verified, usable state. Complete the architecture research and record its decision in `DenoDesktopResearch.md` before starting T21. Prepare production WebView builds for macOS and Windows. Run agentic desktop tests on the macOS development machine against test builds that use the CEF backend with Playwright MCP support. Use a Deno-native WebView for production unless the research records a blocking limitation and the production CEF fallback is approved.
+Complete these tasks in order. Each top-level task is deliberately scoped to one agent run and must leave the repository in a verified, usable state. Keep pnpm, Vite, Vue, and the existing browser test toolchain for the renderer; use the Rust-backed Tauri v2 host for development and production desktop builds. Use Tauri v2 capabilities rather than the removed v1 allowlist, keep native logic in `src-tauri/src/lib.rs`, and grant only the permissions required by the main window. Prepare production bundles for macOS and Windows. Use Playwright MCP against the Vite renderer for browser interactions and supplement it with native Tauri smoke tests for host, database, lifecycle, and packaged-build behavior.
 
-- [ ] **T21 — Replace pnpm and Node project tooling with Deno**
-  - Depends on an approved architecture decision in `DenoDesktopResearch.md`.
-  - Add `deno.json` with pinned imports, permissions, compiler options, formatting/linting rules, and Deno tasks for development, testing, type checking, building, and the complete verification suite.
-  - Run Vite, Vue, Tailwind, PrimeVue, Pinia, Vue Router, Vitest, Vue Test Utils, and Testing Library through Deno's supported npm compatibility without requiring a system Node installation or pnpm.
-  - Replace Node-specific configuration APIs and type dependencies with Deno/Web-standard equivalents while preserving the `@` source alias and strict TypeScript behavior.
-  - Migrate the lockfile to `deno.lock`, then remove `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, Node-only tsconfig files, and obsolete pnpm/node_modules ignores once no command depends on them.
-  - Update repository instructions and developer documentation to use only `deno task ...` commands.
-  - Run the Deno format check, lint, type check, existing test suite, and renderer production build from a clean dependency cache.
+- [x] **T20 — Scaffold and verify the Tauri v2 desktop host**
+  - Confirm the installed CLI reports Tauri v2 with `cargo tauri -V`, then initialize `src-tauri/` around the existing Vue/Vite application without replacing pnpm or the current frontend tooling.
+  - Configure `src-tauri/tauri.conf.json` with `devUrl: http://localhost:5173`, `frontendDist: ../dist`, pnpm-powered `beforeDevCommand` and `beforeBuildCommand`, stable product and bundle identifiers, and a single main window.
+  - Keep `src-tauri/src/main.rs` as a thin desktop launcher and place builder setup and native application logic in `src-tauri/src/lib.rs`; do not add mobile entry points or mobile-target configuration.
+  - Add `src-tauri/capabilities/default.json` using the Tauri v2 desktop schema and the smallest initial `core` permissions needed by the `main` window; do not use a Tauri v1 `allowlist`.
+  - Add pnpm scripts for `tauri dev` and `tauri build`, generate application icons, and ensure a production desktop build embeds `dist` instead of depending on the Vite development server.
+  - Verify the existing `pnpm check`, `cargo check --manifest-path src-tauri/Cargo.toml`, development launch, and an unsigned local macOS bundle.
 
-- [ ] **T22 — Create the production Deno desktop host and typed bridge**
-  - Depends on T21.
-  - Add a focused desktop host that creates and owns the native WebView window, serves or loads bundled renderer assets, handles startup/shutdown, and exposes only an allowlisted typed bridge.
-  - Keep Vue components and route views unaware of WebView implementation details by placing bridge access behind a renderer-side service interface.
-  - Define serializable request, success, and error contracts with request IDs, runtime validation, and predictable handling for malformed messages, unavailable host methods, and native exceptions.
-  - Restrict external navigation, new-window behavior, arbitrary script execution, filesystem access, and Deno permissions to the minimum needed by the application.
-  - Provide separate development and production startup tasks and ensure production never depends on the Vite development server.
-  - Add Deno tests for bridge dispatch, validation, error mapping, and security boundaries.
-
-- [ ] **T23 — Add versioned SQLite schema management and database lifecycle**
-  - Depends on T22.
-  - Integrate a Deno-compatible SQLite driver and create `db.sqlite` in the platform-appropriate per-user application-data directory rather than the installation directory.
+- [ ] **T21 — Add versioned SQLite schema management and database lifecycle**
+  - Depends on T20.
+  - Integrate the Tauri v2 SQL plugin with SQLite, register it in `src-tauri/src/lib.rs`, and grant only its required permissions in `src-tauri/capabilities/default.json`.
+  - Store `db.sqlite` in Tauri's platform-appropriate per-user app-data directory rather than the installation or resource directory.
   - Define a normalized, foreign-keyed schema for leagues, seasons, teams, matches, and locked random tiebreaker data, preserving IDs, timestamps, nullable scores, card defaults, ordering, and league/season relationships.
   - Add a schema-version table and ordered, transactional migrations that are safe to rerun and reject unsupported future schema versions without modifying the database.
-  - Configure foreign keys and appropriate durability settings; use transactions so multi-entity mutations cannot be partially saved.
-  - Handle first run, existing database, corrupt/unopenable database, locked database, migration failure, and clean shutdown with typed errors and no silent data loss.
-  - Add Deno tests against isolated temporary databases for schema creation, constraints, migration idempotency, rollback, reopening, and failure cases.
+  - Configure foreign keys and appropriate durability settings; handle first run, existing database, corrupt/unopenable database, lock/busy failures, migration failure, and clean shutdown with typed errors and no silent data loss.
+  - Add Rust tests against isolated temporary databases for schema creation, constraints, migration idempotency, rollback, reopening, and failure cases.
 
-- [ ] **T24 — Implement and test SQLite repositories for complete application state**
-  - Depends on T23.
-  - Add repositories that load the complete typed `AppState` and atomically persist every league, season, team, fixture, result, card count, and random tiebreaker lock.
-  - Preserve deterministic collection ordering and exact `null`/zero semantics when mapping between SQLite rows and domain models.
+- [ ] **T22 — Implement and test native SQLite repositories**
+  - Depends on T21.
+  - Add Rust repositories that load the complete typed application state and atomically persist every league, season, team, fixture, result, card count, and random tiebreaker lock.
+  - Preserve deterministic collection ordering and exact `null`/zero semantics when mapping between SQLite rows and serializable Rust/TypeScript contracts.
   - Prevent orphaned rows with database constraints and implement league deletion, season deletion, fixture regeneration, round result updates, and result resets as transactions.
-  - Keep SQL, row mapping, and connection management inside the host; expose application-oriented operations rather than arbitrary SQL through the WebView bridge.
-  - Map constraint, busy/locked, disk-full, permission, corruption, and unexpected I/O failures to stable error codes and actionable user-facing messages.
-  - Add focused Deno tests for round trips, cascades, atomic rollback, ordering, null values, tiebreaker locks, and each important failure mapping.
+  - Keep SQL, row mapping, connection management, and database paths inside the Tauri host; never expose arbitrary SQL to the renderer.
+  - Map constraint, busy/locked, disk-full, permission, corruption, and unexpected I/O failures to stable serializable error codes and actionable messages.
+  - Add focused Rust tests for round trips, cascades, atomic rollback, ordering, null values, tiebreaker locks, and each important failure mapping.
 
-- [ ] **T25 — Replace synchronous localStorage persistence with asynchronous desktop persistence**
-  - Depends on T24.
-  - Replace `src/services/storage.ts` with an asynchronous persistence service backed by the typed desktop bridge; no production application state may be read from or written to localStorage.
+- [ ] **T23 — Expose an allowlisted typed Tauri v2 command bridge**
+  - Depends on T22.
+  - Add narrow `#[tauri::command]` functions for application-oriented persistence operations, return typed `Result` values, and register every command in `tauri::generate_handler!`.
+  - Use owned request values for async commands, runtime-validate payloads at the host boundary, and serialize stable success/error contracts shared with the renderer.
+  - Keep Vue components and route views unaware of Tauri by placing calls to `@tauri-apps/api/core` `invoke` behind a renderer-side persistence interface.
+  - Restrict commands to the `main` window through Tauri v2 capabilities and CSP; reject malformed messages and avoid filesystem, shell, arbitrary script, and external-navigation permissions.
+  - Add Rust command tests and Vitest service tests for dispatch, validation, serialization, unavailable-command behavior, native exceptions, and security boundaries.
+
+- [ ] **T24 — Replace synchronous localStorage persistence with asynchronous Tauri persistence**
+  - Depends on T23.
+  - Replace `src/services/storage.ts` with an asynchronous persistence service backed by the typed Tauri command bridge; no production application state may be read from or written to localStorage.
   - Adapt Pinia hydration and mutations to await persistence, prevent overlapping writes from committing out of order, and expose explicit loading, saving, success, and failure states.
   - Preserve accepted in-memory edits when a save fails, disable or serialize conflicting actions where necessary, and replace browser-quota wording with accurate SQLite/disk error feedback.
-  - Keep route-level views thin and retain the current component props/events boundaries while updating UI actions to handle asynchronous completion and duplicate submission safely.
-  - Supply an injectable in-memory persistence adapter for unit/component tests so Vue tests do not require a native window or real database.
-  - Update all affected tests with GIVEN-WHEN-THEN JSDoc and cover hydration, successful writes, write ordering, retries, unavailable host behavior, and persistence failures.
+  - Keep route-level views thin and retain current component props/events boundaries while updating UI actions for asynchronous completion and duplicate-submission safety.
+  - Supply injectable in-memory and failing persistence adapters for unit/component tests so Vue tests do not require a native window or real database.
+  - Update all affected tests with GIVEN-WHEN-THEN JSDoc and cover hydration, successful writes, write ordering, retries, unavailable-host behavior, and persistence failures.
 
-- [ ] **T26 — Add desktop lifecycle UX and recoverable persistence failures**
-  - Depends on T25.
-  - Add an application startup state while the native bridge and database initialize, and prevent CRUD routes from operating against unhydrated state.
+- [ ] **T25 — Add desktop startup, shutdown, and recoverable-failure UX**
+  - Depends on T24.
+  - Add an application startup state while the Tauri host and database initialize, and prevent CRUD routes from operating against unhydrated state.
   - Present actionable desktop-specific errors for database open, migration, lock/busy, disk-full, permission, corruption, and bridge failures without discarding recoverable in-memory/form state.
-  - Ensure closing the window waits for or safely resolves pending writes, and make shutdown failure behavior explicit without allowing write reordering or silent loss.
-  - Handle unsupported direct browser launches with a useful message instead of failing on a missing desktop bridge.
+  - Coordinate the Tauri v2 window close request with pending persistence operations so shutdown completes safely or presents an explicit recoverable failure.
+  - Handle unsupported direct browser launches with a useful message while keeping an explicitly injected test adapter available to browser-based tests.
   - Add component/integration tests for startup, retry, pending-save shutdown coordination, and global error presentation, each with GIVEN-WHEN-THEN JSDoc.
-  - Reserve full desktop interaction coverage for the CEF test build introduced in T27.
+  - Add native integration coverage for initialization, app-data database placement, close handling, and failure mapping.
 
-- [ ] **T27 — Add a Playwright-attachable CEF desktop test build**
+- [ ] **T26 — Add desktop-focused automated and agentic verification**
+  - Depends on T25.
+  - Keep Vitest for renderer and service coverage, use Rust tests for repositories and commands, and add a test configuration that uses an isolated temporary app-data/database location.
+  - Through Playwright MCP against the Vite renderer with the injected persistence adapter, cover representative CRUD, fixture/result editing, standings, responsive behavior, accessibility, reload restoration, persistence errors, and shutdown prompts.
+  - Smoke-test `cargo tauri dev` on macOS and exercise the real Tauri bridge and SQLite path for first launch, persistence across relaunch, random-lock stability, database lock/write failures, and clean shutdown.
+  - Verify production configuration does not expose developer tools, remote-debugging endpoints, broad plugin permissions, arbitrary SQL, or test adapters.
+  - Run `pnpm check`, Rust formatting/lint/tests, and a Tauri debug build as one documented verification workflow.
+
+- [ ] **T27 — Build reproducible macOS and Windows Tauri v2 artifacts**
   - Depends on T26.
-  - Add a test-only CEF/Chromium backend that runs the same compiled renderer, typed bridge, SQLite host operations, and lifecycle contracts as the production Deno-native WebView host.
-  - Enable a loopback-only Chrome DevTools Protocol endpoint with a dynamically allocated port and make the test harness report readiness without exposing remote debugging in production builds.
-  - Keep backend-specific window and messaging code behind a shared host interface so tests exercise production application behavior rather than a separate mock implementation.
-  - Configure Playwright MCP to attach to the test build over CDP and cover representative CRUD, fixture/result editing, standings, reload restoration, persistence errors, and shutdown behavior.
-  - Add a guard that fails packaging if inspector flags, the CDP endpoint, or test-only CEF resources are enabled in a production artifact.
+  - Configure Tauri v2 bundling for macOS `.app`/`.dmg` and Windows NSIS or MSI artifacts with stable identifiers, version metadata, icons, and platform-appropriate app-data paths.
+  - Ensure release artifacts contain the compiled Rust host and bundled renderer and require neither Node, pnpm, Rust, nor a Vite server on the user's machine.
+  - Ensure upgrades preserve the user database and document uninstallation behavior; never place mutable state inside signed or read-only application resources.
+  - Add platform CI builds where practical and document externally supplied macOS signing/notarization and Windows code-signing credentials while keeping unsigned local builds available.
+  - Generate checksums and a release manifest for prepared macOS and Windows artifacts, and smoke-test installation, launch, upgrade-preserved data, and uninstall behavior.
 
-- [ ] **T28 — Build reproducible macOS and Windows desktop artifacts with Deno**
+- [ ] **T28 — Complete Tauri migration verification and documentation**
   - Depends on T27.
-  - Add Deno tasks that produce self-contained release artifacts containing the compiled host, bundled renderer, icons/resources, and required native WebView libraries without requiring Deno, Node, or pnpm on the user's machine.
-  - Package a macOS application bundle and a Windows application package/installer with stable application identifiers, version metadata, icons, and platform-appropriate `db.sqlite` paths.
-  - Ensure upgrades preserve the user database and uninstallation behavior is documented; never place mutable state inside signed or read-only application resources.
-  - Document and automate the available signing/notarization steps using externally supplied credentials, while keeping unsigned local builds available for development use.
-  - Generate checksums and a release manifest for the prepared macOS and Windows artifacts.
-
-- [ ] **T29 — Complete agentic migration verification and documentation**
-  - Depends on T28.
-  - Run the full Deno verification suite and confirm no project command, source import, generated artifact, or documentation requires pnpm, Node, Electron, Tauri, localStorage persistence, or a development server in production.
-  - Through Playwright MCP on the macOS CEF test build, verify first launch, CRUD, fixture generation, result/card editing, standings, reload restoration, random-lock stability, persistence failures, and shutdown coordination.
-  - Confirm through the CEF test build that `db.sqlite` is created only in the documented per-user location and that no application state is stored in localStorage.
-  - Exercise database lock, disk/write failure, bridge failure, and interrupted-shutdown recovery without silent data loss through automated Deno tests or the CEF test build.
-  - Run accessibility and responsive UAT through Playwright MCP against the CEF test build and capture screenshots for visual review.
-  - Update `README.md`, `PRD.md`, and repository guidance to describe the desktop product, Deno workflow, SQLite persistence, platform prerequisites, backup location, troubleshooting, and release process.
+  - Run the complete pnpm, Rust, and Tauri verification suites and confirm production does not depend on Deno, Electron, a custom CEF host, localStorage persistence, or a development server.
+  - Verify first launch, CRUD, fixture generation, result/card editing, standings, relaunch restoration, random-lock stability, persistence failures, and shutdown coordination across automated renderer tests and native macOS smoke tests.
+  - Confirm `db.sqlite` is created only in the documented Tauri app-data location and no application state is stored in localStorage.
+  - Exercise database lock, disk/write failure, bridge failure, and interrupted-shutdown recovery without silent data loss.
+  - Run accessibility and responsive UAT through Playwright MCP against the renderer and capture screenshots for visual review; separately record native window and packaged-build smoke results.
+  - Update `README.md`, `PRD.md`, and repository guidance to describe the Tauri v2 desktop product, pnpm/Rust workflow, SQLite persistence, platform prerequisites, backup location, capability model, troubleshooting, and release process.
