@@ -1,5 +1,15 @@
+mod database;
+
+use tauri::Manager;
+
 pub fn run() {
-    let mut builder = tauri::Builder::default();
+    let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_sql::Builder::default().build())
+        .setup(|app| {
+            let database = database::Database::open_in_app_data(app.handle())?;
+            app.manage(database);
+            Ok(())
+        });
 
     #[cfg(debug_assertions)]
     {
