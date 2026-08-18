@@ -29,6 +29,7 @@ describe('asynchronous persistence adapters', () => {
    */
   it('uses the typed native bridge for production persistence', async () => {
     const native = {
+      initialize: vi.fn().mockResolvedValue({ success: true as const }),
       load: vi.fn().mockResolvedValue(state),
       persist: vi.fn().mockResolvedValue({ success: true as const }),
     }
@@ -61,6 +62,7 @@ describe('asynchronous persistence adapters', () => {
    */
   it('maps native database failures without browser quota wording', async () => {
     const adapter = createTauriPersistenceAdapter({
+      initialize: vi.fn(),
       load: vi.fn(),
       persist: vi
         .fn()

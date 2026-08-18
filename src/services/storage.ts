@@ -29,11 +29,14 @@ export interface PersistenceService {
 export function createTauriPersistenceAdapter(
   service: Pick<
     NativePersistenceService,
-    'load' | 'persist'
+    'initialize' | 'load' | 'persist'
   > = nativePersistenceService,
 ): PersistenceService {
   return {
-    load: () => service.load(),
+    async load() {
+      await service.initialize()
+      return service.load()
+    },
     async save(state) {
       try {
         await service.persist(state)

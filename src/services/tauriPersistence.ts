@@ -47,6 +47,7 @@ export class NativePersistenceError extends Error {
 }
 
 export interface NativePersistenceService {
+  initialize(): Promise<CommandSuccess>
   load(): Promise<AppState>
   persist(state: AppState): Promise<CommandSuccess>
   deleteLeague(leagueId: string): Promise<CommandSuccess>
@@ -90,6 +91,7 @@ export function createNativePersistenceService(
   }
 
   return {
+    initialize: () => call('initialize_database'),
     load: () => call<AppState>('load_app_state'),
     persist: (state) => call('persist_app_state', { state }),
     deleteLeague: (leagueId) => call('delete_league', { id: leagueId }),

@@ -2,14 +2,12 @@ pub mod commands;
 pub mod database;
 pub mod repository;
 
-use tauri::Manager;
-
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_sql::Builder::default().build())
         .setup(|app| {
-            let database = database::Database::open_in_app_data(app.handle())?;
-            app.manage(database);
+            use tauri::Manager;
+            app.manage(database::DatabaseState::default());
             Ok(())
         });
 
@@ -20,6 +18,7 @@ pub fn run() {
 
     builder
         .invoke_handler(tauri::generate_handler![
+            commands::initialize_database,
             commands::load_app_state,
             commands::persist_app_state,
             commands::delete_league,

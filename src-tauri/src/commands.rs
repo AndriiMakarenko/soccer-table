@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    database::Database,
+    database::{Database, DatabaseError, DatabaseState},
     repository::{
         AppState, Match, RepositoryError, RepositoryErrorCode, RoundResultUpdate, Season,
     },
@@ -91,6 +91,63 @@ impl From<RepositoryError> for CommandError {
             message: error.message,
         }
     }
+}
+
+impl From<DatabaseError> for CommandError {
+    fn from(error: DatabaseError) -> Self {
+        let (code, message) = match error {
+            DatabaseError::Busy => (
+                CommandErrorCode::Busy,
+                "The tournament database is busy or locked. Close other running instances and retry.".into(),
+            ),
+            DatabaseError::DiskFull => (
+                CommandErrorCode::DiskFull,
+                "The database disk is full. Free some space, then retry startup.".into(),
+            ),
+            DatabaseError::PermissionDenied => (
+                CommandErrorCode::PermissionDenied,
+                "Fixture Board cannot access its application-data database. Check folder permissions and retry.".into(),
+            ),
+            DatabaseError::Corrupt => (
+                CommandErrorCode::Corrupt,
+                "The tournament database is corrupt. Restore a backup before retrying.".into(),
+            ),
+            DatabaseError::CreateDirectory { source, .. }
+                if source.kind() == std::io::ErrorKind::PermissionDenied => (
+                    CommandErrorCode::PermissionDenied,
+                    "Fixture Board cannot create its application-data folder. Check folder permissions and retry.".into(),
+                ),
+            DatabaseError::UnsupportedVersion { .. } | DatabaseError::Migration { .. } => (
+                CommandErrorCode::Io,
+                format!("Database migration could not be completed: {error}"),
+            ),
+            DatabaseError::AppDataPath(_) | DatabaseError::CreateDirectory { .. } | DatabaseError::Open { .. } | DatabaseError::Configuration(_) => (
+                CommandErrorCode::Io,
+                format!("The tournament database could not be opened: {error}"),
+            ),
+        };
+        Self { code, message }
+    }
+}
+
+#[tauri::command]
+pub async fn initialize_database(app: AppHandle) -> Result<CommandSuccess, CommandError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let database = Database::open_in_app_data(&app).map_err(CommandError::from)?;
+        let state = app.state::<DatabaseState>();
+        let mut slot = state.database.lock().map_err(|_| CommandError {
+            code: CommandErrorCode::Unexpected,
+            message: "The database startup state is unavailable. Restart Fixture Board and retry."
+                .into(),
+        })?;
+        *slot = Some(database);
+        Ok(CommandSuccess::new())
+    })
+    .await
+    .map_err(|_| CommandError {
+        code: CommandErrorCode::Unexpected,
+        message: "Database initialization could not be completed. Try again.".into(),
+    })?
 }
 
 #[tauri::command]
@@ -194,13 +251,23 @@ async fn run_database<T: Send + 'static>(
     app: AppHandle,
     operation: impl FnOnce(&Database) -> Result<T, RepositoryError> + Send + 'static,
 ) -> Result<T, CommandError> {
-    tauri::async_runtime::spawn_blocking(move || operation(app.state::<Database>().inner()))
-        .await
-        .map_err(|_| CommandError {
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<DatabaseState>();
+        let slot = state.database.lock().map_err(|_| CommandError {
             code: CommandErrorCode::Unexpected,
-            message: "The native persistence command could not be completed. Try again.".into(),
-        })?
-        .map_err(CommandError::from)
+            message: "The database state is unavailable. Restart Fixture Board and retry.".into(),
+        })?;
+        let database = slot.as_ref().ok_or_else(|| CommandError {
+            code: CommandErrorCode::Unexpected,
+            message: "The database has not finished initializing. Retry startup first.".into(),
+        })?;
+        operation(database).map_err(CommandError::from)
+    })
+    .await
+    .map_err(|_| CommandError {
+        code: CommandErrorCode::Unexpected,
+        message: "The native persistence command could not be completed. Try again.".into(),
+    })?
 }
 
 fn validate_state(state: &AppState) -> Result<(), CommandError> {
@@ -463,6 +530,30 @@ mod tests {
             serde_json::to_string(&error).unwrap(),
             r#"{"code":"disk-full","message":"disk full"}"#
         );
+    }
+
+    #[test]
+    fn maps_database_initialization_failures_to_recoverable_codes() {
+        let cases = [
+            (DatabaseError::Busy, CommandErrorCode::Busy),
+            (DatabaseError::DiskFull, CommandErrorCode::DiskFull),
+            (
+                DatabaseError::PermissionDenied,
+                CommandErrorCode::PermissionDenied,
+            ),
+            (DatabaseError::Corrupt, CommandErrorCode::Corrupt),
+            (
+                DatabaseError::UnsupportedVersion {
+                    found: 2,
+                    supported: 1,
+                },
+                CommandErrorCode::Io,
+            ),
+        ];
+
+        for (error, expected) in cases {
+            assert_eq!(CommandError::from(error).code, expected);
+        }
     }
 
     #[test]

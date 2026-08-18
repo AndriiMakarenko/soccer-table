@@ -30,7 +30,9 @@ describe('Tauri persistence command bridge', () => {
    */
   it('dispatches every persistence operation through its narrow command', async () => {
     const invoke = vi.fn().mockResolvedValue({ success: true })
-    invoke.mockResolvedValueOnce(emptyState)
+    invoke
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce(emptyState)
     const service = createNativePersistenceService(invoke)
     const update = {
       matchId: fixture.id,
@@ -42,6 +44,7 @@ describe('Tauri persistence command bridge', () => {
       awayRedCards: 0,
     }
 
+    await service.initialize()
     await service.load()
     await service.persist(emptyState)
     await service.deleteLeague('league-1')
@@ -56,6 +59,7 @@ describe('Tauri persistence command bridge', () => {
     await service.resetResults('season-1')
 
     expect(invoke.mock.calls).toEqual([
+      ['initialize_database', undefined],
       ['load_app_state', undefined],
       ['persist_app_state', { request: { state: emptyState } }],
       ['delete_league', { request: { id: 'league-1' } }],
@@ -152,6 +156,7 @@ describe('Tauri persistence command bridge', () => {
     expect(Object.keys(service).sort()).toEqual([
       'deleteLeague',
       'deleteSeason',
+      'initialize',
       'load',
       'persist',
       'regenerateFixtures',

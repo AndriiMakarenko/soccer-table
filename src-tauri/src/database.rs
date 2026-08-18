@@ -36,6 +36,10 @@ pub enum DatabaseError {
     },
     #[error("the database is busy or locked; close other running instances and try again")]
     Busy,
+    #[error("the database disk is full")]
+    DiskFull,
+    #[error("permission to access the database was denied")]
+    PermissionDenied,
     #[error("the database is corrupt or is not a valid SQLite database")]
     Corrupt,
     #[error("the database could not be opened at {path}: {message}")]
@@ -56,6 +60,11 @@ pub enum DatabaseError {
 pub struct Database {
     path: PathBuf,
     pub(crate) connection: Mutex<Connection>,
+}
+
+#[derive(Debug, Default)]
+pub struct DatabaseState {
+    pub(crate) database: Mutex<Option<Database>>,
 }
 
 impl Database {
@@ -188,6 +197,10 @@ fn apply_migration_in_transaction(
 fn map_open_error(path: &Path, error: rusqlite::Error) -> DatabaseError {
     match error.sqlite_error_code() {
         Some(ErrorCode::DatabaseBusy | ErrorCode::DatabaseLocked) => DatabaseError::Busy,
+        Some(ErrorCode::DiskFull) => DatabaseError::DiskFull,
+        Some(ErrorCode::PermissionDenied | ErrorCode::ReadOnly | ErrorCode::CannotOpen) => {
+            DatabaseError::PermissionDenied
+        }
         Some(ErrorCode::DatabaseCorrupt | ErrorCode::NotADatabase) => DatabaseError::Corrupt,
         _ => DatabaseError::Open {
             path: path.to_path_buf(),
@@ -199,6 +212,10 @@ fn map_open_error(path: &Path, error: rusqlite::Error) -> DatabaseError {
 fn map_configuration_error(error: rusqlite::Error) -> DatabaseError {
     match error.sqlite_error_code() {
         Some(ErrorCode::DatabaseBusy | ErrorCode::DatabaseLocked) => DatabaseError::Busy,
+        Some(ErrorCode::DiskFull) => DatabaseError::DiskFull,
+        Some(ErrorCode::PermissionDenied | ErrorCode::ReadOnly | ErrorCode::CannotOpen) => {
+            DatabaseError::PermissionDenied
+        }
         Some(ErrorCode::DatabaseCorrupt | ErrorCode::NotADatabase) => DatabaseError::Corrupt,
         _ => DatabaseError::Configuration(error.to_string()),
     }
@@ -207,6 +224,10 @@ fn map_configuration_error(error: rusqlite::Error) -> DatabaseError {
 fn map_migration_error(migration: &Migration, error: rusqlite::Error) -> DatabaseError {
     match error.sqlite_error_code() {
         Some(ErrorCode::DatabaseBusy | ErrorCode::DatabaseLocked) => DatabaseError::Busy,
+        Some(ErrorCode::DiskFull) => DatabaseError::DiskFull,
+        Some(ErrorCode::PermissionDenied | ErrorCode::ReadOnly | ErrorCode::CannotOpen) => {
+            DatabaseError::PermissionDenied
+        }
         Some(ErrorCode::DatabaseCorrupt | ErrorCode::NotADatabase) => DatabaseError::Corrupt,
         _ => DatabaseError::Migration {
             version: migration.version,
@@ -245,6 +266,16 @@ mod tests {
 
         assert_eq!(version, CURRENT_SCHEMA_VERSION);
         assert_eq!(foreign_keys, 1);
+    }
+
+    #[test]
+    fn keeps_the_database_at_the_requested_app_data_path() {
+        let (_directory, path) = temporary_database();
+
+        let database = Database::open(path.clone()).expect("database should open");
+
+        assert_eq!(database.path(), path);
+        assert!(database.path().is_file());
     }
 
     #[test]
@@ -376,7 +407,7 @@ mod tests {
         fs::create_dir(&directory_path).expect("database directory fixture should exist");
         let unopenable =
             Database::open(directory_path).expect_err("directory cannot be a database");
-        assert!(matches!(unopenable, DatabaseError::Open { .. }));
+        assert!(matches!(unopenable, DatabaseError::PermissionDenied));
     }
 
     #[test]

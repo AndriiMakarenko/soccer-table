@@ -3,6 +3,10 @@ import { computed, ref, shallowRef } from 'vue'
 
 import type { AppState, League, Season } from '@/domain/models'
 import { persistenceService, type SaveResult } from '@/services/storage'
+import {
+  NativePersistenceError,
+  type PersistenceErrorCode,
+} from '@/services/tauriPersistence'
 
 export const useAppStateStore = defineStore('app-state', () => {
   const leagues = ref<League[]>([])
@@ -13,11 +17,15 @@ export const useAppStateStore = defineStore('app-state', () => {
   const isSaving = computed(() => pendingSaves.value > 0)
   const lastSaveSucceeded = shallowRef<boolean | null>(null)
   const saveError = shallowRef<string | null>(null)
+  const startupError = shallowRef<string | null>(null)
+  const startupErrorCode = shallowRef<PersistenceErrorCode | null>(null)
   let writeQueue = Promise.resolve()
 
   async function load(): Promise<void> {
     if (isLoading.value || isLoaded.value) return
     isLoading.value = true
+    startupError.value = null
+    startupErrorCode.value = null
     try {
       const persistedState = await persistenceService.load()
       const leagueIds = new Set(
@@ -31,10 +39,12 @@ export const useAppStateStore = defineStore('app-state', () => {
       isLoaded.value = true
       saveError.value = null
     } catch (error) {
-      saveError.value =
+      startupError.value =
         error instanceof Error
           ? error.message
           : 'The desktop database could not be loaded.'
+      startupErrorCode.value =
+        error instanceof NativePersistenceError ? error.code : 'unexpected'
     } finally {
       isLoading.value = false
     }
@@ -74,6 +84,11 @@ export const useAppStateStore = defineStore('app-state', () => {
     saveError.value = null
   }
 
+  async function waitForPendingSaves(): Promise<boolean> {
+    await writeQueue
+    return pendingSaves.value === 0 && saveError.value === null
+  }
+
   return {
     leagues,
     seasons,
@@ -82,8 +97,11 @@ export const useAppStateStore = defineStore('app-state', () => {
     isSaving,
     lastSaveSucceeded,
     saveError,
+    startupError,
+    startupErrorCode,
     load,
     persist,
+    waitForPendingSaves,
     clearSaveError,
   }
 })

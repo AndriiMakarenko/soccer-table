@@ -224,7 +224,7 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Supply injectable in-memory and failing persistence adapters for unit/component tests so Vue tests do not require a native window or real database.
   - Update all affected tests with GIVEN-WHEN-THEN JSDoc and cover hydration, successful writes, write ordering, retries, unavailable-host behavior, and persistence failures.
 
-- [ ] **T25 — Add desktop startup, shutdown, and recoverable-failure UX**
+- [x] **T25 — Add desktop startup, shutdown, and recoverable-failure UX**
   - Depends on T24.
   - Add an application startup state while the Tauri host and database initialize, and prevent CRUD routes from operating against unhydrated state.
   - Present actionable desktop-specific errors for database open, migration, lock/busy, disk-full, permission, corruption, and bridge failures without discarding recoverable in-memory/form state.
