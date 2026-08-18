@@ -14,6 +14,7 @@ export const useLeagueStore = defineStore('leagues', () => {
   const leagues = computed(() => appState.leagues)
   const isLoaded = computed(() => appState.isLoaded)
   const saveError = computed(() => appState.saveError)
+  const isSaving = computed(() => appState.isSaving)
 
   function load(): void {
     appState.load()
@@ -103,6 +104,7 @@ export const useLeagueStore = defineStore('leagues', () => {
     leagues,
     isLoaded,
     saveError,
+    isSaving,
     load,
     createLeague,
     renameLeague,

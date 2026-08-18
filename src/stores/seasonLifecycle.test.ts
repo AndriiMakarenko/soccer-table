@@ -61,10 +61,10 @@ describe('season team, fixture, and result lifecycle', () => {
 
   beforeEach(() => {
     persistedState = { leagues: [], seasons: [] }
-    vi.spyOn(persistenceService, 'load').mockImplementation(() =>
+    vi.spyOn(persistenceService, 'load').mockImplementation(async () =>
       cloneState(persistedState),
     )
-    vi.spyOn(persistenceService, 'save').mockImplementation((state) => {
+    vi.spyOn(persistenceService, 'save').mockImplementation(async (state) => {
       persistedState = cloneState(state)
       return { success: true }
     })
@@ -112,7 +112,7 @@ describe('season team, fixture, and result lifecycle', () => {
    * WHEN scores and card counts are updated and a score is later cleared
    * THEN values are normalized, persisted, and the cleared score becomes null
    */
-  it('updates and clears scores and card counts', () => {
+  it('updates and clears scores and card counts', async () => {
     const { seasonStore, season } = createReadySeason()
     const match = season.matches[0]!
 
@@ -137,9 +137,14 @@ describe('season team, fixture, and result lifecycle', () => {
       },
     })
 
-    expect(
-      seasonStore.updateMatchResult(season.id, match.id, { homeScore: '' }),
-    ).toMatchObject({ success: true, value: { homeScore: null, awayScore: 1 } })
+    const cleared = seasonStore.updateMatchResult(season.id, match.id, {
+      homeScore: '',
+    })
+    expect(cleared).toMatchObject({
+      success: true,
+      value: { homeScore: null, awayScore: 1 },
+    })
+    if (cleared.success) await cleared.saveResult
     expect(persistedState.seasons[0]?.matches[0]?.homeScore).toBeNull()
   })
 
@@ -173,7 +178,7 @@ describe('season team, fixture, and result lifecycle', () => {
    * WHEN all results are reset
    * THEN every score is null, cards are zero, locks are cleared, and state is saved
    */
-  it('resets every result and random tiebreaker lock', () => {
+  it('resets every result and random tiebreaker lock', async () => {
     const { seasonStore, season } = createReadySeason()
     const match = season.matches[0]!
     seasonStore.updateMatchResult(season.id, match.id, {
@@ -198,6 +203,7 @@ describe('season team, fixture, and result lifecycle', () => {
       awayRedCards: 0,
     })
     expect(season.randomTiebreakerLocks).toEqual([])
+    if (result.success) await result.saveResult
     expect(persistedState.seasons[0]).toEqual(season)
   })
 
@@ -278,11 +284,11 @@ describe('season team, fixture, and result lifecycle', () => {
    * WHEN the match is updated
    * THEN the changed result remains available and the save failure is exposed
    */
-  it('retains lifecycle mutations when persistence fails', () => {
+  it('retains lifecycle mutations when persistence fails', async () => {
     const { seasonStore, season } = createReadySeason()
-    vi.mocked(persistenceService.save).mockReturnValue({
+    vi.mocked(persistenceService.save).mockResolvedValue({
       success: false,
-      reason: 'quota-exceeded',
+      reason: 'disk-full',
       message: STORAGE_FULL_MESSAGE,
     })
 
@@ -292,10 +298,11 @@ describe('season team, fixture, and result lifecycle', () => {
       { homeScore: 5 },
     )
 
-    expect(result).toMatchObject({
-      success: true,
-      value: { homeScore: 5 },
-      saveResult: { success: false, reason: 'quota-exceeded' },
+    expect(result).toMatchObject({ success: true, value: { homeScore: 5 } })
+    if (!result.success) return
+    await expect(result.saveResult).resolves.toMatchObject({
+      success: false,
+      reason: 'disk-full',
     })
     expect(season.matches[0]!.homeScore).toBe(5)
     expect(seasonStore.saveError).toBe(STORAGE_FULL_MESSAGE)
@@ -306,20 +313,25 @@ describe('season team, fixture, and result lifecycle', () => {
    * WHEN a fresh Pinia instance loads persisted state
    * THEN the complete season lifecycle state is restored
    */
-  it('restores persisted season lifecycle data after reload', () => {
+  it('restores persisted season lifecycle data after reload', async () => {
     const { seasonStore, season } = createReadySeason()
-    seasonStore.updateMatchResult(season.id, season.matches[0]!.id, {
-      homeScore: 0,
-      awayScore: 0,
-      homeRedCards: 1,
-      awayRedCards: 1,
-    })
+    const update = seasonStore.updateMatchResult(
+      season.id,
+      season.matches[0]!.id,
+      {
+        homeScore: 0,
+        awayScore: 0,
+        homeRedCards: 1,
+        awayRedCards: 1,
+      },
+    )
+    if (update.success) await update.saveResult
     const locks = cloneLocks(season.randomTiebreakerLocks)
     expect(locks.length).toBeGreaterThan(0)
 
     setActivePinia(createPinia())
     const reloadedStore = useSeasonStore()
-    reloadedStore.load()
+    await reloadedStore.load()
     const reloadedSeason = reloadedStore.seasonById(season.id)
 
     expect(reloadedSeason).toMatchObject({

@@ -215,7 +215,7 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Restrict commands to the `main` window through Tauri v2 capabilities and CSP; reject malformed messages and avoid filesystem, shell, arbitrary script, and external-navigation permissions.
   - Add Rust command tests and Vitest service tests for dispatch, validation, serialization, unavailable-command behavior, native exceptions, and security boundaries.
 
-- [ ] **T24 — Replace synchronous localStorage persistence with asynchronous Tauri persistence**
+- [x] **T24 — Replace synchronous localStorage persistence with asynchronous Tauri persistence**
   - Depends on T23.
   - Replace `src/services/storage.ts` with an asynchronous persistence service backed by the typed Tauri command bridge; no production application state may be read from or written to localStorage.
   - Adapt Pinia hydration and mutations to await persistence, prevent overlapping writes from committing out of order, and expose explicit loading, saving, success, and failure states.

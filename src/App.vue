@@ -9,7 +9,7 @@ import { provide } from 'vue'
 const appState = useAppStateStore()
 
 provide(globalPersistenceErrorHostKey, true)
-if (!appState.isLoaded) appState.load()
+if (!appState.isLoaded) void appState.load()
 </script>
 
 <template>

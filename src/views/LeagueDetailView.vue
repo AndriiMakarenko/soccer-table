@@ -25,19 +25,21 @@ const league = computed(() =>
 const seasons = computed(() => seasonStore.seasonsForLeague(leagueId.value))
 
 onMounted(() => {
-  if (!leagueStore.isLoaded) leagueStore.load()
+  if (!leagueStore.isLoaded) void leagueStore.load()
 })
 
-function renameSeason(name: string): void {
+async function renameSeason(name: string): Promise<void> {
   if (!renameTarget.value) return
   const result = seasonStore.renameSeason(renameTarget.value.id, name)
-  if (result.success) renameTarget.value = null
+  if (result.success && (await result.saveResult).success)
+    renameTarget.value = null
 }
 
-function deleteSeason(): void {
+async function deleteSeason(): Promise<void> {
   if (!deleteTarget.value) return
   const result = seasonStore.deleteSeason(deleteTarget.value.id)
-  if (result.success) deleteTarget.value = null
+  if (result.success && (await result.saveResult).success)
+    deleteTarget.value = null
 }
 </script>
 

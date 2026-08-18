@@ -25,7 +25,7 @@ const league = computed(() =>
 )
 
 onMounted(() => {
-  if (!leagueStore.isLoaded) leagueStore.load()
+  if (!leagueStore.isLoaded) void leagueStore.load()
 })
 
 async function createSeason(values: SeasonSetupValues): Promise<void> {
@@ -36,7 +36,7 @@ async function createSeason(values: SeasonSetupValues): Promise<void> {
   await nextTick()
 
   if (pendingSeasonId.value) {
-    const saveResult = seasonStore.savePendingChanges()
+    const saveResult = await seasonStore.savePendingChanges()
 
     if (!saveResult.success) {
       submissionError.value = saveResult.message
@@ -59,9 +59,10 @@ async function createSeason(values: SeasonSetupValues): Promise<void> {
     return
   }
 
-  if (!result.saveResult.success) {
+  const saveResult = await result.saveResult
+  if (!saveResult.success) {
     pendingSeasonId.value = result.value.id
-    submissionError.value = result.saveResult.message
+    submissionError.value = saveResult.message
     isSubmitting.value = false
     return
   }
