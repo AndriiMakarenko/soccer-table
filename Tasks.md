@@ -189,7 +189,7 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Add pnpm scripts for `tauri dev` and `tauri build`, generate application icons, and ensure a production desktop build embeds `dist` instead of depending on the Vite development server.
   - Verify the existing `pnpm check`, `cargo check --manifest-path src-tauri/Cargo.toml`, development launch, and an unsigned local macOS bundle.
 
-- [ ] **T21 — Add versioned SQLite schema management and database lifecycle**
+- [x] **T21 — Add versioned SQLite schema management and database lifecycle**
   - Depends on T20.
   - Integrate the Tauri v2 SQL plugin with SQLite, register it in `src-tauri/src/lib.rs`, and grant only its required permissions in `src-tauri/capabilities/default.json`.
   - Store `db.sqlite` in Tauri's platform-appropriate per-user app-data directory rather than the installation or resource directory.
@@ -198,7 +198,7 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Configure foreign keys and appropriate durability settings; handle first run, existing database, corrupt/unopenable database, lock/busy failures, migration failure, and clean shutdown with typed errors and no silent data loss.
   - Add Rust tests against isolated temporary databases for schema creation, constraints, migration idempotency, rollback, reopening, and failure cases.
 
-- [ ] **T22 — Implement and test native SQLite repositories**
+- [x] **T22 — Implement and test native SQLite repositories**
   - Depends on T21.
   - Add Rust repositories that load the complete typed application state and atomically persist every league, season, team, fixture, result, card count, and random tiebreaker lock.
   - Preserve deterministic collection ordering and exact `null`/zero semantics when mapping between SQLite rows and serializable Rust/TypeScript contracts.
