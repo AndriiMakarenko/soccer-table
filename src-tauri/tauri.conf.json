@@ -30,12 +30,25 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "publisher": "Andy Mac",
+    "category": "Sports",
+    "shortDescription": "Local round-robin football tournament manager",
+    "longDescription": "Create leagues and seasons, generate fixtures, record results, and calculate standings in a private local desktop application.",
+    "copyright": "Copyright © 2026 Andy Mac",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.13"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
   }
 }

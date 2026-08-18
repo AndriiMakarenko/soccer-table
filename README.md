@@ -4,7 +4,7 @@ Just a fun soccer table tracker for Nazar.
 
 ## What is it?
 
-Soccer Table is a browser-based round robin tournament manager. It will let you create leagues and seasons, add teams in bulk, generate fixtures, record scores and cards, and follow live overall, home, and away standings. The app is designed for local, single-user use, with tournament data stored in the browser.
+Soccer Table is a Tauri v2 desktop round robin tournament manager. It lets you create leagues and seasons, add teams in bulk, generate fixtures, record scores and cards, and follow live overall, home, and away standings. The app is designed for local, single-user use, with tournament data stored in SQLite under the platform app-data directory.
 
 ## Development commands
 
@@ -46,6 +46,10 @@ Build the renderer and native desktop bundles:
 ```bash
 pnpm tauri:build
 ```
+
+For reproducible macOS and Windows release artifacts, signing inputs, checksums,
+upgrade behavior, and the installation smoke checklist, see
+[`docs/RELEASING.md`](docs/RELEASING.md).
 
 Run the TypeScript checks:
 
