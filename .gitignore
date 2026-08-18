@@ -3,14 +3,17 @@
 
 # Playwright working directory
 .playwright-mcp
+playwright-report/
+test-results/
 
 # Package manager cache directories
 node_modules
 .pnpm-store
 .vite
 
-# Built output directory
+# Built output directories
 dist
+src-tauri/target/
 
 coverage
 *.local

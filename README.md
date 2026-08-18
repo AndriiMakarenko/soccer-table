@@ -108,3 +108,31 @@ To run linting, formatting checks, typechecking, tests, and the production build
 ```bash
 pnpm check
 ```
+
+## Desktop verification
+
+T26's repeatable desktop gate runs renderer checks, Playwright desktop/tablet
+journeys with an isolated in-process Tauri IPC mock, the production security
+audit, Rust formatting/clippy/tests, and a non-bundled Tauri debug build:
+
+```bash
+pnpm check:desktop
+```
+
+Install Playwright's Chromium once before the first run with
+`pnpm exec playwright install chromium`. Rust repository and command tests use
+temporary SQLite databases. For an isolated manual native smoke test, launch a
+debug host with a fresh app-data directory:
+
+```bash
+FIXTURE_BOARD_TEST_APP_DATA_DIR="$(mktemp -d)" pnpm tauri:dev:mcp
+```
+
+The supplemental `tauri.mcp.conf.json` enables the global Tauri object and the
+`mcp-automation` capability only for this explicit debug command. Use the Tauri
+MCP bridge only with that launch. Verify first launch,
+create/edit/relaunch persistence, a completed-season random tie, database-lock
+error presentation, and clean close while saving. The override is compiled out
+of release builds; production always resolves `db.sqlite` through Tauri's
+platform app-data directory. The MCP bridge is likewise registered only in
+debug builds and is not granted to the production main-window capability.

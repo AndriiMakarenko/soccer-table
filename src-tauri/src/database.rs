@@ -69,10 +69,17 @@ pub struct DatabaseState {
 
 impl Database {
     pub fn open_in_app_data<R: Runtime>(app: &AppHandle<R>) -> Result<Self, DatabaseError> {
-        let app_data_dir = app
+        let platform_app_data_dir = app
             .path()
             .app_data_dir()
             .map_err(DatabaseError::AppDataPath)?;
+        #[cfg(debug_assertions)]
+        let app_data_dir = std::env::var_os("FIXTURE_BOARD_TEST_APP_DATA_DIR")
+            .filter(|value| !value.is_empty())
+            .map(PathBuf::from)
+            .unwrap_or(platform_app_data_dir);
+        #[cfg(not(debug_assertions))]
+        let app_data_dir = platform_app_data_dir;
         Self::open(app_data_dir.join(DATABASE_FILE_NAME))
     }
 
