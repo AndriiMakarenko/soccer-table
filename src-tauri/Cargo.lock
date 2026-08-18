@@ -3244,6 +3244,7 @@ name = "round-robin-tournament-manager"
 version = "0.1.0"
 dependencies = [
  "rusqlite",
+ "serde",
  "tauri",
  "tauri-build",
  "tauri-plugin-mcp-bridge",

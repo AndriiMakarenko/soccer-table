@@ -55,8 +55,7 @@ pub enum DatabaseError {
 #[derive(Debug)]
 pub struct Database {
     path: PathBuf,
-    #[allow(dead_code)] // Kept open for repository operations added in T22.
-    connection: Mutex<Connection>,
+    pub(crate) connection: Mutex<Connection>,
 }
 
 impl Database {
