@@ -207,7 +207,7 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Map constraint, busy/locked, disk-full, permission, corruption, and unexpected I/O failures to stable serializable error codes and actionable messages.
   - Add focused Rust tests for round trips, cascades, atomic rollback, ordering, null values, tiebreaker locks, and each important failure mapping.
 
-- [ ] **T23 — Expose an allowlisted typed Tauri v2 command bridge**
+- [x] **T23 — Expose an allowlisted typed Tauri v2 command bridge**
   - Depends on T22.
   - Add narrow `#[tauri::command]` functions for application-oriented persistence operations, return typed `Result` values, and register every command in `tauri::generate_handler!`.
   - Use owned request values for async commands, runtime-validate payloads at the host boundary, and serialize stable success/error contracts shared with the renderer.

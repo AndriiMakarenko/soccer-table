@@ -1,3 +1,4 @@
+pub mod commands;
 pub mod database;
 pub mod repository;
 
@@ -18,6 +19,15 @@ pub fn run() {
     }
 
     builder
+        .invoke_handler(tauri::generate_handler![
+            commands::load_app_state,
+            commands::persist_app_state,
+            commands::delete_league,
+            commands::delete_season,
+            commands::regenerate_fixtures,
+            commands::update_round_results,
+            commands::reset_results,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

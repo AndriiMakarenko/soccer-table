@@ -20,6 +20,7 @@
   "dependencies": {
     "@primeuix/themes": "^1.2.3",
     "@tailwindcss/vite": "^4.1.11",
+    "@tauri-apps/api": "^2.11.1",
     "pinia": "^3.0.3",
     "primevue": "^4.3.7",
     "tailwindcss": "^4.1.11",
