@@ -27,24 +27,28 @@ const seasonCounts = computed(() => {
 })
 
 onMounted(() => {
-  if (!leagueStore.isLoaded) leagueStore.load()
+  if (!leagueStore.isLoaded) void leagueStore.load()
 })
 
-function createLeague(name: string): void {
+async function createLeague(name: string): Promise<void> {
+  if (leagueStore.isSaving) return
   const result = leagueStore.createLeague(name)
-  if (result.success) createDialogVisible.value = false
+  if (result.success && (await result.saveResult).success)
+    createDialogVisible.value = false
 }
 
-function renameLeague(name: string): void {
+async function renameLeague(name: string): Promise<void> {
   if (!renameTarget.value) return
   const result = leagueStore.renameLeague(renameTarget.value.id, name)
-  if (result.success) renameTarget.value = null
+  if (result.success && (await result.saveResult).success)
+    renameTarget.value = null
 }
 
-function deleteLeague(): void {
+async function deleteLeague(): Promise<void> {
   if (!deleteTarget.value) return
   const result = leagueStore.deleteLeague(deleteTarget.value.id)
-  if (result.success) deleteTarget.value = null
+  if (result.success && (await result.saveResult).success)
+    deleteTarget.value = null
 }
 </script>
 

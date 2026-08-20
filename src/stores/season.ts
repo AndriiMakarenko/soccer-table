@@ -88,6 +88,7 @@ export const useSeasonStore = defineStore('seasons', () => {
   const seasons = computed(() => appState.seasons)
   const isLoaded = computed(() => appState.isLoaded)
   const saveError = computed(() => appState.saveError)
+  const isSaving = computed(() => appState.isSaving)
 
   function load(): void {
     appState.load()
@@ -400,7 +401,7 @@ export const useSeasonStore = defineStore('seasons', () => {
     return { success: true, value, saveResult: appState.persist() }
   }
 
-  function savePendingChanges(): SaveResult {
+  function savePendingChanges(): Promise<SaveResult> {
     return appState.persist()
   }
 
@@ -408,6 +409,7 @@ export const useSeasonStore = defineStore('seasons', () => {
     seasons,
     isLoaded,
     saveError,
+    isSaving,
     load,
     seasonsForLeague,
     seasonById,

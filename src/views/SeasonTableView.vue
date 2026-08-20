@@ -22,7 +22,7 @@ const season = computed(() => {
 })
 
 onMounted(() => {
-  if (!leagueStore.isLoaded) leagueStore.load()
+  if (!leagueStore.isLoaded) void leagueStore.load()
 })
 </script>
 

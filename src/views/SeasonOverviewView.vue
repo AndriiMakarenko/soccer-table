@@ -61,17 +61,19 @@ const teamInput = computed(
 )
 
 onMounted(() => {
-  if (!leagueStore.isLoaded) leagueStore.load()
+  if (!leagueStore.isLoaded) void leagueStore.load()
 })
 
-function renameSeason(name: string): void {
+async function renameSeason(name: string): Promise<void> {
   const result = seasonStore.renameSeason(seasonId.value, name)
-  if (result.success) showRenameDialog.value = false
+  if (result.success && (await result.saveResult).success)
+    showRenameDialog.value = false
 }
 
-function resetResults(): void {
+async function resetResults(): Promise<void> {
   const result = seasonStore.resetAllResults(seasonId.value)
-  if (result.success) showResetDialog.value = false
+  if (result.success && (await result.saveResult).success)
+    showResetDialog.value = false
 }
 
 function openRegeneration(): void {
@@ -79,7 +81,9 @@ function openRegeneration(): void {
   showRegenerateDialog.value = true
 }
 
-function regenerateFixtures(values: RegenerateFixturesValues): void {
+async function regenerateFixtures(
+  values: RegenerateFixturesValues,
+): Promise<void> {
   actionError.value = null
   const result = seasonStore.regenerateFixtures(seasonId.value, {
     teamInput: values.teamInput,
@@ -92,7 +96,7 @@ function regenerateFixtures(values: RegenerateFixturesValues): void {
     return
   }
 
-  showRegenerateDialog.value = false
+  if ((await result.saveResult).success) showRegenerateDialog.value = false
 }
 </script>
 

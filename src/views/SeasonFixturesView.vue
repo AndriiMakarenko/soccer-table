@@ -31,14 +31,20 @@ const completedFixtures = computed(
 )
 
 onMounted(() => {
-  if (!leagueStore.isLoaded) leagueStore.load()
+  if (!leagueStore.isLoaded) void leagueStore.load()
 })
 
-function saveRound(updates: RoundMatchResultInput[]): void {
+async function saveRound(updates: RoundMatchResultInput[]): Promise<void> {
   actionError.value = ''
   const result = seasonStore.updateRoundResults(seasonId.value, updates)
 
-  if (!result.success) actionError.value = result.message
+  if (!result.success) {
+    actionError.value = result.message
+    return
+  }
+
+  const saveResult = await result.saveResult
+  if (!saveResult.success) actionError.value = saveResult.message
 }
 </script>
 

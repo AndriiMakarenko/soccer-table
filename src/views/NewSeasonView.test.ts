@@ -172,14 +172,14 @@ describe('new season view', () => {
   })
 
   /**
-   * GIVEN valid entered setup data and browser storage that is full
+   * GIVEN valid entered setup data and the desktop database disk is full
    * WHEN creation fails to persist and the user retries
    * THEN the error and inputs remain while only one in-memory season exists
    */
   it('preserves form data and prevents duplicate creation after save failure', async () => {
-    vi.mocked(persistenceService.save).mockReturnValue({
+    vi.mocked(persistenceService.save).mockResolvedValue({
       success: false,
-      reason: 'quota-exceeded',
+      reason: 'disk-full',
       message: STORAGE_FULL_MESSAGE,
     })
     const router = await renderView(`/leagues/${league.id}/seasons/new`)
@@ -197,12 +197,16 @@ describe('new season view', () => {
       'Northside FC\nRiverside United\nAthletic Club\nCity Rovers',
     )
 
-    await fireEvent.click(submitButton)
+    await fireEvent.click(
+      await screen.findByRole('button', { name: 'Retry saving season' }),
+    )
+    await vi.waitFor(() =>
+      expect(persistenceService.save).toHaveBeenCalledTimes(2),
+    )
 
     expect(router.currentRoute.value.name).toBe('season-new')
     expect(useSeasonStore().seasons).toHaveLength(1)
     expect(state.seasons).toHaveLength(0)
-    expect(persistenceService.save).toHaveBeenCalledTimes(2)
   })
 
   /**

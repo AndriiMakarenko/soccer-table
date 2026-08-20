@@ -8,3 +8,5 @@ Tasks.md
 .agents
 .codex
 .playwright-mcp
+src-tauri/target
+src-tauri/gen

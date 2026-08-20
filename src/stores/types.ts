@@ -4,7 +4,7 @@ export type StoreMutationResult<T> =
   | {
       success: true
       value: T
-      saveResult: SaveResult
+      saveResult: Promise<SaveResult>
     }
   | {
       success: false

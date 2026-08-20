@@ -1,0 +1,13 @@
+[[permission]]
+identifier = "allow-persistence-commands"
+description = "Allows the main window to use the typed tournament persistence bridge."
+commands.allow = [
+  "initialize_database",
+  "load_app_state",
+  "persist_app_state",
+  "delete_league",
+  "delete_season",
+  "regenerate_fixtures",
+  "update_round_results",
+  "reset_results",
+]

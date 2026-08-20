@@ -161,14 +161,14 @@ describe('league management views', () => {
   })
 
   /**
-   * GIVEN browser storage rejects an otherwise valid dashboard mutation
+   * GIVEN desktop database persistence rejects an otherwise valid dashboard mutation
    * WHEN the user creates a league
    * THEN the league stays visible and the required persistence error is announced
    */
   it('keeps changes visible while surfacing persistence failures', async () => {
-    vi.mocked(persistenceService.save).mockReturnValue({
+    vi.mocked(persistenceService.save).mockResolvedValue({
       success: false,
-      reason: 'quota-exceeded',
+      reason: 'disk-full',
       message: STORAGE_FULL_MESSAGE,
     })
     await renderView(DashboardView, '/')
@@ -188,7 +188,7 @@ describe('league management views', () => {
     expect(
       await screen.findByRole('heading', { name: 'Storage League' }),
     ).toBeInTheDocument()
-    expect(screen.getByText(STORAGE_FULL_MESSAGE)).toBeInTheDocument()
+    expect(await screen.findByText(STORAGE_FULL_MESSAGE)).toBeInTheDocument()
   })
 
   /**
