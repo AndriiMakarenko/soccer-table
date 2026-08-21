@@ -2,11 +2,11 @@
 
 ## 1. Product Summary
 
-Build a browser-based Vue application for creating and managing round robin football-style tournaments.
+Build a local Tauri v2 desktop application for creating and managing round robin football-style tournaments.
 
 The app allows users to create leagues and seasons, enter teams in bulk, generate round robin fixtures, manually enter match scores and card counts, and view live standings with full, home-only, and away-only table modes.
 
-The app is intended as a local, single-user browser app for now. Data is persisted in `localStorage`.
+The app is intended for local, single-user desktop use. A Rust host persists tournament data in SQLite through a narrow, typed Tauri command bridge. The bundled application is self-contained and does not require a browser, development server, Node.js, pnpm, or Rust at runtime.
 
 ---
 
@@ -21,9 +21,11 @@ The app is intended as a local, single-user browser app for now. Data is persist
 - Tailwind CSS for layout
 - PrimeVue for UI components/styling
 - Vitest for tests
-- localStorage for persistence
+- Tauri v2 with a Rust host and capability-scoped IPC
+- SQLite in Tauri's per-user application-data directory
+- Playwright for renderer accessibility, responsive, and representative workflow tests
 
-The storage layer should be isolated behind a service so it can later be replaced with IndexedDB or backend persistence.
+The asynchronous storage layer must remain isolated behind a service. Production uses only the native Tauri adapter; injectable in-memory and failing adapters keep renderer tests independent of a native window.
 
 ---
 
@@ -405,7 +407,12 @@ In filtered modes, all stats must be recalculated from the filtered match set, i
 
 ## 12. Persistence
 
-The app stores all data in browser `localStorage`.
+The Rust host stores all tournament state in `db.sqlite`. Production resolves the database through Tauri's platform app-data API:
+
+- macOS: `~/Library/Application Support/space.andymac.roundrobin/db.sqlite`
+- Windows: `%APPDATA%\space.andymac.roundrobin\db.sqlite`
+
+The database must never be created in the application bundle, installation directory, renderer assets, current working directory, or a browser storage API. `localStorage` is not a production persistence mechanism.
 
 Persist:
 
@@ -419,19 +426,21 @@ Persist:
 
 Requirements:
 
-- data survives page reload
-- data survives browser restart
-- app must handle localStorage quota errors
-- if localStorage runs out of space, show a clear user-facing error
-- do not silently lose data
+- data survives renderer reload, app relaunch, and in-place upgrades
+- writes are asynchronous and serialized so an older write cannot overwrite newer accepted state
+- accepted in-memory edits remain available when persistence fails
+- database busy/lock, disk-full, permission, corruption, bridge, and unexpected I/O failures produce actionable UI
+- app shutdown waits for pending persistence or presents a recoverable failure instead of silently losing data
+- versioned migrations run transactionally at startup
+- production never reads or writes application state through `localStorage`
 
 Example error message:
 
 ```text
-Could not save changes because browser storage is full. Please export or delete old leagues/seasons before continuing.
+Could not save changes to the desktop database. Check available disk space and permissions, then try again.
 ```
 
-No backend or file-system folder persistence is required for MVP.
+Backups are made while the application is closed. Copy `db.sqlite` together with `db.sqlite-wal` and `db.sqlite-shm` when those sidecar files exist.
 
 ---
 
@@ -667,10 +676,14 @@ Required tests:
 
 ### Persistence
 
-- saves app state to localStorage
-- loads app state from localStorage
-- handles corrupted localStorage safely
-- shows error when localStorage quota is exceeded
+- initializes and migrates a fresh SQLite database in an isolated app-data directory
+- saves and loads app state through typed Tauri commands
+- serializes overlapping writes and retains the newest accepted state
+- persists CRUD, results, cards, and locked random tiebreakers across relaunch
+- maps database lock, disk/write, permission, corruption, and bridge failures
+- preserves in-memory edits and supports retry after a recoverable failure
+- coordinates close requests with pending and failed writes
+- proves production does not access `localStorage`
 
 ---
 
@@ -681,7 +694,6 @@ The MVP does not need:
 - backend server
 - user accounts
 - cloud sync
-- real folder creation on disk
 - import/export files
 - match dates/times
 - playoff/bracket formats
@@ -714,11 +726,14 @@ The project is done when:
 16. Final unresolved ties are randomized only after all matches are complete.
 17. Random final tiebreakers are saved and remain stable.
 18. User can switch between overall, home-only, and away-only tables.
-19. Data persists in localStorage after reload.
-20. localStorage quota errors are shown clearly.
+19. Data persists in SQLite after renderer reload and native app relaunch.
+20. Database and Tauri bridge failures are shown clearly without discarding accepted in-memory edits.
 21. Fixture UI uses round panels with centered score inputs between team names.
 22. Standings UI uses a dense dark table with clear aligned stat columns.
 23. Core business logic is covered by Vitest tests.
+24. Production creates `db.sqlite` only in Tauri's per-user app-data directory and stores no application state in `localStorage`.
+25. The macOS bundle contains the Rust host and renderer and requires no development server or developer toolchain at runtime.
+26. Pending writes and recoverable shutdown failures cannot cause silent data loss.
 
 ---
 
@@ -726,7 +741,7 @@ The project is done when:
 
 1. Project setup with Vue 3, Vite, pnpm, TypeScript, Pinia, Router, Tailwind, PrimeVue, Vitest.
 2. Define TypeScript models.
-3. Build localStorage persistence service.
+3. Build the typed Tauri command bridge and SQLite persistence service.
 4. Build league and season CRUD.
 5. Build bulk team input.
 6. Build fixture generation.
@@ -736,6 +751,8 @@ The project is done when:
 10. Build ranking and tiebreaker logic.
 11. Add home/away/overall table filters.
 12. Add random tiebreaker locking.
-13. Add error handling for localStorage quota.
-14. Add Vitest coverage.
-15. Polish UI according to the verbal layout and style requirements.
+13. Add desktop startup, persistence-failure, and shutdown coordination UX.
+14. Add Vitest, Rust, and Playwright coverage.
+15. Configure least-privilege Tauri capabilities and production security checks.
+16. Build and smoke-test reproducible signed or unsigned desktop artifacts.
+17. Polish UI according to the verbal layout and style requirements.

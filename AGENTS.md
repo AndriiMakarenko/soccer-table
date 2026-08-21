@@ -24,6 +24,10 @@ Use pnpm for all package operations.
 - `pnpm format:check` verifies Prettier formatting; `pnpm format` applies it.
 - `pnpm build` typechecks and creates the production bundle in `dist/`.
 - `pnpm check` runs every required automated verification step.
+- `pnpm test:e2e` runs desktop and tablet Playwright journeys against the renderer with an isolated Tauri IPC mock.
+- `pnpm check:desktop` runs the pnpm gate, Playwright journeys, production security audit, Rust formatting/lint/tests, and a non-bundled Tauri debug build.
+- `pnpm tauri:dev` starts the Vite renderer inside the native Tauri host.
+- `pnpm release:macos` verifies and prepares the local macOS artifact, checksum, and manifest.
 
 ## Coding Style & Naming Conventions
 
@@ -38,6 +42,8 @@ Always create a GIVEN-WHEN-THEN JSDoc together with each test. `GIVEN` describes
 For any tests that include interaction with the browser, use Playwright MCP.
 
 For UAT that includes clicking around a live instance of the application, assume the dev server is already up at `http://localhost:5173`. Only start it in the background terminal if you tried accessing the app and failed.
+
+Native persistence tests must use a temporary app-data directory. Never point automated tests at the user's production `db.sqlite`. Production state belongs only in Tauri's platform app-data directory and must not use `localStorage`. Use the production `default` capability for release behavior; the `mcp-automation` capability and `FIXTURE_BOARD_TEST_APP_DATA_DIR` override are debug-only verification aids.
 
 ## Commit & Pull Request Guidelines
 

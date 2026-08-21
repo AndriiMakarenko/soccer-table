@@ -255,5 +255,5 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Verify first launch, CRUD, fixture generation, result/card editing, standings, relaunch restoration, random-lock stability, persistence failures, and shutdown coordination across automated renderer tests and native macOS smoke tests.
   - Confirm `db.sqlite` is created only in the documented Tauri app-data location and no application state is stored in localStorage.
   - Exercise database lock, disk/write failure, bridge failure, and interrupted-shutdown recovery without silent data loss.
-  - Run accessibility and responsive UAT through Playwright MCP against the renderer and capture screenshots for visual review; separately record native window and packaged-build smoke results.
+  - Run accessibility and responsive UAT through Playwright MCP against the renderer; separately record native window and packaged-build smoke results.
   - Update `README.md`, `PRD.md`, and repository guidance to describe the Tauri v2 desktop product, pnpm/Rust workflow, SQLite persistence, platform prerequisites, backup location, capability model, troubleshooting, and release process.
