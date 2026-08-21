@@ -51,6 +51,13 @@ For reproducible macOS and Windows release artifacts, signing inputs, checksums,
 upgrade behavior, and the installation smoke checklist, see
 [`docs/RELEASING.md`](docs/RELEASING.md).
 
+Prepare a verified, unsigned local macOS `.app.zip` plus its release manifest
+and SHA-256 checksum with:
+
+```bash
+pnpm release:macos
+```
+
 Run the TypeScript checks:
 
 ```bash

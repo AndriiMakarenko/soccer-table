@@ -241,7 +241,7 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Verify production configuration does not expose developer tools, remote-debugging endpoints, broad plugin permissions, arbitrary SQL, or test adapters.
   - Run `pnpm check`, Rust formatting/lint/tests, and a Tauri debug build as one documented verification workflow.
 
-- [ ] **T27 — Build a reproducible macOS Tauri v2 application artifact**
+- [x] **T27 — Build a reproducible macOS Tauri v2 application artifact**
   - Depends on T26.
   - Configure Tauri v2 bundling for a macOS `.app` artifact with a stable identifier, version metadata, icons, and a platform-appropriate app-data path.
   - Ensure release artifacts contain the compiled Rust host and bundled renderer and require neither Node, pnpm, Rust, nor a Vite server on the user's machine.

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { constants } from 'node:fs'
 import { copyFile, mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { basename, resolve } from 'node:path'
 import process from 'node:process'
@@ -38,6 +39,7 @@ const outputDirectory = resolve(
 await mkdir(outputDirectory, { recursive: true })
 
 const artifacts = []
+const artifactNames = new Set()
 for (const argument of artifactArguments) {
   const source = resolve(argument)
   const sourceStat = await stat(source)
@@ -46,8 +48,13 @@ for (const argument of artifactArguments) {
   }
 
   const fileName = basename(source)
+  if (artifactNames.has(fileName)) {
+    throw new Error(`Release artifact names must be unique: ${fileName}`)
+  }
+  artifactNames.add(fileName)
+
   const destination = resolve(outputDirectory, fileName)
-  await copyFile(source, destination)
+  await copyFile(source, destination, constants.COPYFILE_EXCL)
   const contents = await readFile(destination)
   artifacts.push({
     file: fileName,

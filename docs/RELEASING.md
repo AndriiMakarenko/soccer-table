@@ -14,7 +14,25 @@ Install dependencies from the lockfiles and confirm Tauri CLI 2.x before each
 platform build.
 
 Every release is built manually on the platform that will execute it. There is
-no repository-hosted release automation. Start from a clean checkout and run:
+no repository-hosted release automation. On macOS, the repeatable release gate,
+`.app` build, metadata-preserving archive, checksum, and manifest are one command:
+
+```bash
+pnpm release:macos
+```
+
+By default this writes to
+`release-artifacts/macos-<architecture>/v<version>/` and refuses to overwrite an
+existing release directory. Set `RELEASE_OUTPUT_DIRECTORY` to choose another
+new directory. The script records the current commit in the manifest; run it
+from the exact clean commit intended for release.
+
+The command refuses a dirty worktree for publishable artifacts. During local
+development only, `RELEASE_ALLOW_DIRTY=1 pnpm release:macos` creates a smoke
+artifact whose manifest marks the commit with a `-dirty` suffix; do not publish
+that artifact.
+
+The equivalent individual verification and build commands are:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -30,7 +48,8 @@ Tauri cannot cross-compile these application bundles. macOS produces `.app`
 under `src-tauri/target/release/bundle/macos/`; Windows produces an NSIS
 installer under `src-tauri/target/release/bundle/nsis/`.
 
-On macOS, archive the generated `.app` with `ditto`, preserving its metadata:
+The macOS command above archives the generated `.app` with `ditto`, preserving
+its metadata. For diagnosis or a deliberately manual release, the equivalent is:
 
 ```bash
 ditto -c -k --sequesterRsrc --keepParent \
