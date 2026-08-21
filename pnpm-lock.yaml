@@ -17,6 +17,12 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.11.1
         version: 2.11.1
+      '@tauri-apps/plugin-dialog':
+        specifier: ^2.7.2
+        version: 2.7.2
+      '@tauri-apps/plugin-fs':
+        specifier: ^2.5.1
+        version: 2.5.1
       pinia:
         specifier: ^3.0.3
         version: 3.0.4(typescript@5.8.3)(vue@3.5.39(typescript@5.8.3))
@@ -657,6 +663,12 @@ packages:
 
   '@tauri-apps/api@2.11.1':
     resolution: {integrity: sha512-M2FPuYND2m+wh5hfW9ZpSdxMPdEJovPBWwoHJmwUpysTYNHaOkVFN419m/K0LIgjb/7KU2vBgsUepJWugQCvAA==}
+
+  '@tauri-apps/plugin-dialog@2.7.2':
+    resolution: {integrity: sha512-pX0IGm1I3I6wc+zeKYcq1GSqogK6okCNX5fOdaNU5ab1AjGS6l1E5wFNjEb7meg7ZFSp0JUs+0jQGQNyOvLrsg==}
+
+  '@tauri-apps/plugin-fs@2.5.1':
+    resolution: {integrity: sha512-9Lz+Jopp6QyeEWhlpkMx4R/+P9HgR+AVAI4vOZhlT8Xaymtz8iVI/Ov984/XTqgJz/5gz5NretqPB/XEMS3NhQ==}
 
   '@testing-library/dom@9.3.4':
     resolution: {integrity: sha512-FlS4ZWlp97iiNWig0Muq8p+3rVDjRiYE+YKGbAqXOu9nwJFFOdL00kFpz42M+4huzYi86vAK1sOOfyOG45muIQ==}
@@ -2506,6 +2518,14 @@ snapshots:
       vite: 7.3.6(@types/node@24.13.3)(jiti@2.7.0)(lightningcss@1.32.0)
 
   '@tauri-apps/api@2.11.1': {}
+
+  '@tauri-apps/plugin-dialog@2.7.2':
+    dependencies:
+      '@tauri-apps/api': 2.11.1
+
+  '@tauri-apps/plugin-fs@2.5.1':
+    dependencies:
+      '@tauri-apps/api': 2.11.1
 
   '@testing-library/dom@9.3.4':
     dependencies:

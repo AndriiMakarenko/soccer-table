@@ -98,6 +98,12 @@ export const useAppStateStore = defineStore('app-state', () => {
     return pendingSaves.value === 0 && saveError.value === null
   }
 
+  function exportState(): AppState {
+    return JSON.parse(
+      JSON.stringify({ leagues: leagues.value, seasons: seasons.value }),
+    ) as AppState
+  }
+
   interface ImportResult {
     success: boolean
     importedLeagueNames: string[]
@@ -163,6 +169,7 @@ export const useAppStateStore = defineStore('app-state', () => {
     load,
     persist,
     waitForPendingSaves,
+    exportState,
     importState,
     clearSaveError,
   }

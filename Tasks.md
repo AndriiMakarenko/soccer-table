@@ -272,7 +272,7 @@ Complete these tasks in order. Browser builds must use the application's version
   - Return a structured import result. When merge skips conflicts, show a completion dialog listing every league that was not imported because of its naming conflict; show an unambiguous success result when nothing was skipped.
   - Add focused Vitest coverage, with GIVEN-WHEN-THEN JSDoc, for round-trip fidelity, version/schema rejection, replace cancellation and confirmation, successful replacement, conflict-free merge, whole-league conflict skipping and reporting, identifier collisions, atomic persistence failure, and imports containing multiple conflicts.
 
-- [ ] **T30 — Add cross-platform IMPORT and EXPORT controls**
+- [x] **T30 — Add cross-platform IMPORT and EXPORT controls**
   - Depends on T29.
   - Replace the `Stored locally` header badge with two controls in the same compact outlined visual style and in this order: `IMPORT`, then `EXPORT`.
   - Keep `AppShell` focused on layout by moving file-transfer orchestration, choice/confirmation dialogs, progress state, and result/error presentation into focused typed components or composables with explicit props and events.
