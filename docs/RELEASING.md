@@ -1,8 +1,8 @@
 # Desktop release guide
 
 Round Robin Tournament Manager ships as a self-contained Tauri v2 desktop
-application. The macOS release contains an `.app.zip` and `.dmg`; Windows uses
-an NSIS `.exe` installer. The compiled Rust host embeds the production renderer,
+application. The macOS release contains an `.app.zip`; Windows uses an NSIS
+`.exe` installer. The compiled Rust host embeds the production renderer,
 so an installed release does not require Node.js, pnpm, Rust, or a Vite server.
 
 ## Version and build inputs
@@ -27,7 +27,7 @@ cargo tauri build
 ```
 
 Tauri cannot cross-compile these application bundles. macOS produces `.app`
-and `.dmg` under `src-tauri/target/release/bundle/`; Windows produces an NSIS
+under `src-tauri/target/release/bundle/macos/`; Windows produces an NSIS
 installer under `src-tauri/target/release/bundle/nsis/`.
 
 On macOS, archive the generated `.app` with `ditto`, preserving its metadata:
@@ -48,8 +48,7 @@ RELEASE_EXPECTED_VERSION=0.1.0 \
 RELEASE_COMMIT=<full-commit-sha> \
 RELEASE_OUTPUT_DIRECTORY=release-artifacts/macos-aarch64 \
 pnpm release:prepare \
-  "Round Robin Tournament Manager.app.zip" \
-  src-tauri/target/release/bundle/dmg/*.dmg
+  "Round Robin Tournament Manager.app.zip"
 ```
 
 On Windows PowerShell, prepare the NSIS release directory with:
@@ -81,8 +80,8 @@ and expose `APPLE_SIGNING_IDENTITY`. Notarization can use either an App Store
 Connect API key (`APPLE_API_ISSUER`, `APPLE_API_KEY`, and `APPLE_API_KEY_PATH`)
 or Apple ID credentials (`APPLE_ID`, an app-specific `APPLE_PASSWORD`, and
 `APPLE_TEAM_ID`). Tauri discovers these variables during `cargo tauri build`.
-Both the app and DMG must pass `codesign --verify --deep --strict` and
-`spctl --assess --type open` before publication.
+The app must pass `codesign --verify --deep --strict` and
+`spctl --assess --type execute` before publication.
 
 For Windows, import a trusted OV/EV code-signing certificate on the Windows
 runner, then provide its SHA-1 thumbprint through an uncommitted Tauri config
@@ -100,7 +99,7 @@ The stable bundle identifier is `space.andymac.roundrobin`. Tauri resolves
 - macOS: `~/Library/Application Support/space.andymac.roundrobin/db.sqlite`
 - Windows: `%APPDATA%\space.andymac.roundrobin\db.sqlite`
 
-Mutable data is never stored in the `.app`, DMG, installer, executable, or
+Mutable data is never stored in the `.app`, installer, executable, or
 signed resources. Installing a newer version over an older version therefore
 preserves the database and applies versioned migrations on launch. Back up the
 database (plus `db.sqlite-wal` and `db.sqlite-shm` if present) only while the app

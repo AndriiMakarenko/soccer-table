@@ -179,7 +179,7 @@ Complete tasks in order unless a task explicitly says it can run independently. 
 
 ## Tauri v2 Desktop and SQLite Migration
 
-Complete these tasks in order. Each top-level task is deliberately scoped to one agent run and must leave the repository in a verified, usable state. Keep pnpm, Vite, Vue, and the existing browser test toolchain for the renderer; use the Rust-backed Tauri v2 host for development and production desktop builds. Use Tauri v2 capabilities rather than the removed v1 allowlist, keep native logic in `src-tauri/src/lib.rs`, and grant only the permissions required by the main window. Prepare production bundles for macOS and Windows. Use Playwright MCP against the Vite renderer for browser interactions and supplement it with native Tauri smoke tests for host, database, lifecycle, and packaged-build behavior.
+Complete these tasks in order. Each top-level task is deliberately scoped to one agent run and must leave the repository in a verified, usable state. Keep pnpm, Vite, Vue, and the existing browser test toolchain for the renderer; use the Rust-backed Tauri v2 host for development and production desktop builds. Use Tauri v2 capabilities rather than the removed v1 allowlist, keep native logic in `src-tauri/src/lib.rs`, and grant only the permissions required by the main window. Prepare a production macOS application bundle. Use Playwright MCP against the Vite renderer for browser interactions and supplement it with native Tauri smoke tests for host, database, lifecycle, and packaged-build behavior.
 
 - [x] **T20 — Scaffold and verify the Tauri v2 desktop host**
   - Confirm the installed CLI reports Tauri v2 with `cargo tauri -V`, then initialize `src-tauri/` around the existing Vue/Vite application without replacing pnpm or the current frontend tooling.
@@ -233,7 +233,7 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Add component/integration tests for startup, retry, pending-save shutdown coordination, and global error presentation, each with GIVEN-WHEN-THEN JSDoc.
   - Add native integration coverage for initialization, app-data database placement, close handling, and failure mapping.
 
-- [ ] **T26 — Add desktop-focused automated and agentic verification**
+- [x] **T26 — Add desktop-focused automated and agentic verification**
   - Depends on T25.
   - Keep Vitest for renderer and service coverage, use Rust tests for repositories and commands, and add a test configuration that uses an isolated temporary app-data/database location.
   - Through Playwright MCP against the Vite renderer with the injected persistence adapter, cover representative CRUD, fixture/result editing, standings, responsive behavior, accessibility, reload restoration, persistence errors, and shutdown prompts.
@@ -241,13 +241,13 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Verify production configuration does not expose developer tools, remote-debugging endpoints, broad plugin permissions, arbitrary SQL, or test adapters.
   - Run `pnpm check`, Rust formatting/lint/tests, and a Tauri debug build as one documented verification workflow.
 
-- [ ] **T27 — Build reproducible macOS and Windows Tauri v2 artifacts**
+- [ ] **T27 — Build a reproducible macOS Tauri v2 application artifact**
   - Depends on T26.
-  - Configure Tauri v2 bundling for macOS `.app`/`.dmg` and Windows NSIS or MSI artifacts with stable identifiers, version metadata, icons, and platform-appropriate app-data paths.
+  - Configure Tauri v2 bundling for a macOS `.app` artifact with a stable identifier, version metadata, icons, and a platform-appropriate app-data path.
   - Ensure release artifacts contain the compiled Rust host and bundled renderer and require neither Node, pnpm, Rust, nor a Vite server on the user's machine.
   - Ensure upgrades preserve the user database and document uninstallation behavior; never place mutable state inside signed or read-only application resources.
-  - Add platform CI builds where practical and document externally supplied macOS signing/notarization and Windows code-signing credentials while keeping unsigned local builds available.
-  - Generate checksums and a release manifest for prepared macOS and Windows artifacts, and smoke-test installation, launch, upgrade-preserved data, and uninstall behavior.
+  - Document externally supplied macOS signing/notarization credentials while keeping unsigned local builds available; release builds remain fully manual and require no hosted automation.
+  - Generate a checksum and release manifest for the prepared macOS artifact, and smoke-test installation, launch, upgrade-preserved data, and uninstall behavior.
 
 - [ ] **T28 — Complete Tauri migration verification and documentation**
   - Depends on T27.
