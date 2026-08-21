@@ -14,11 +14,12 @@
     "lint:fix": "eslint . --fix",
     "audit:desktop": "node scripts/audit-desktop-security.mjs",
     "release:prepare": "node scripts/prepare-release.mjs",
+    "release:macos": "sh scripts/build-macos-release.sh",
     "tauri:dev": "cargo tauri dev",
     "tauri:dev:mcp": "cargo tauri dev --config src-tauri/tauri.mcp.conf.json",
     "tauri:build": "cargo tauri build",
     "typecheck": "vue-tsc -b",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/prepare-release.node-test.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest"
   },

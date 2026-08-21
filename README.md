@@ -27,6 +27,11 @@ Install the project dependencies:
 pnpm install
 ```
 
+On macOS, install Xcode Command Line Tools with `xcode-select --install`. Tauri
+uses the system WebKit runtime. Windows development additionally requires the
+Microsoft C++ Build Tools and WebView2; end users normally receive WebView2 with
+supported Windows installations.
+
 Start the development server:
 
 ```bash
@@ -50,6 +55,13 @@ pnpm tauri:build
 For reproducible macOS and Windows release artifacts, signing inputs, checksums,
 upgrade behavior, and the installation smoke checklist, see
 [`docs/RELEASING.md`](docs/RELEASING.md).
+
+Prepare a verified, unsigned local macOS `.app.zip` plus its release manifest
+and SHA-256 checksum with:
+
+```bash
+pnpm release:macos
+```
 
 Run the TypeScript checks:
 
@@ -140,3 +152,39 @@ error presentation, and clean close while saving. The override is compiled out
 of release builds; production always resolves `db.sqlite` through Tauri's
 platform app-data directory. The MCP bridge is likewise registered only in
 debug builds and is not granted to the production main-window capability.
+
+The completed verification matrix and the distinction between automated and
+manual native evidence are recorded in [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
+
+## Persistence, permissions, and recovery
+
+The production renderer cannot access SQLite or the filesystem directly. Its
+typed persistence service invokes only the commands listed in
+`src-tauri/permissions/persistence.toml`. The `main` window receives the
+least-privilege `default` capability; filesystem, shell, arbitrary SQL, remote
+navigation, developer tooling, and the debug MCP bridge are not production
+permissions.
+
+On macOS the database is
+`~/Library/Application Support/space.andymac.roundrobin/db.sqlite`; on Windows
+it is `%APPDATA%\space.andymac.roundrobin\db.sqlite`. Close the app before a
+backup and copy `db.sqlite` plus `db.sqlite-wal` and `db.sqlite-shm` if present.
+Restoring those files to the same directory while the app is closed restores the
+local tournaments. Application upgrades and normal uninstall preserve this
+directory.
+
+If startup or saving fails:
+
+- For a busy/locked database, close other app instances and retry after the
+  current writer finishes.
+- For disk-full or permission errors, free space or restore write access to the
+  app-data directory, then retry; accepted edits remain in memory while the app
+  stays open.
+- For corruption, close the app and restore a known-good backup. Do not overwrite
+  the damaged files before preserving a diagnostic copy.
+- A bridge-unavailable message means the renderer was opened directly in a
+  browser. Launch with `pnpm tauri:dev` or use the installed desktop app.
+
+Release construction, signing/notarization inputs, checksums, upgrade/uninstall
+behavior, and the packaged-build smoke checklist are documented in
+[`docs/RELEASING.md`](docs/RELEASING.md).
