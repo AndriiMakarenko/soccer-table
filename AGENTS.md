@@ -17,16 +17,16 @@ Product requirements and ordered implementation work are documented in `PRD.md` 
 Use pnpm for all package operations.
 
 - `pnpm install` installs locked dependencies.
-- `pnpm dev` starts the local Vite server, normally at `http://localhost:5173`.
+- `pnpm dev` starts the browser/localStorage Vite application, normally at `http://localhost:5173`.
 - `pnpm test` runs Vitest once; `pnpm test:watch` reruns affected tests.
 - `pnpm typecheck` runs strict Vue and TypeScript checks.
 - `pnpm lint` checks Vue and TypeScript code with ESLint.
 - `pnpm format:check` verifies Prettier formatting; `pnpm format` applies it.
-- `pnpm build` typechecks and creates the production bundle in `dist/`.
+- `pnpm build` typechecks and creates the browser/localStorage production bundle in `dist/`.
 - `pnpm check` runs every required automated verification step.
-- `pnpm test:e2e` runs desktop and tablet Playwright journeys against the renderer with an isolated Tauri IPC mock.
+- `pnpm test:e2e` runs desktop and tablet Playwright journeys against the browser/localStorage renderer with isolated browser contexts.
 - `pnpm check:desktop` runs the pnpm gate, Playwright journeys, production security audit, Rust formatting/lint/tests, and a non-bundled Tauri debug build.
-- `pnpm tauri:dev` starts the Vite renderer inside the native Tauri host.
+- `pnpm tauri:dev` starts the SQLite renderer inside the native Tauri host; `pnpm tauri:build` creates desktop bundles with the same backend.
 - `pnpm release:macos` verifies and prepares the local macOS artifact, checksum, and manifest.
 
 ## Coding Style & Naming Conventions
@@ -43,7 +43,9 @@ For any tests that include interaction with the browser, use Playwright MCP.
 
 For UAT that includes clicking around a live instance of the application, assume the dev server is already up at `http://localhost:5173`. Only start it in the background terminal if you tried accessing the app and failed.
 
-Native persistence tests must use a temporary app-data directory. Never point automated tests at the user's production `db.sqlite`. Production state belongs only in Tauri's platform app-data directory and must not use `localStorage`. Use the production `default` capability for release behavior; the `mcp-automation` capability and `FIXTURE_BOARD_TEST_APP_DATA_DIR` override are debug-only verification aids.
+Native persistence tests must use a temporary app-data directory. Never point automated tests at the user's production `db.sqlite`. Desktop production state belongs only in Tauri's platform app-data directory and must not fall back to `localStorage`; browser production state belongs only in the versioned `round-robin-tournament-manager:v1` localStorage entry and must not create or require SQLite. Backend selection is build-time only. Use the production `default` capability for release behavior; the `mcp-automation` capability and `FIXTURE_BOARD_TEST_APP_DATA_DIR` override are debug-only verification aids.
+
+JSON transfer uses interchange envelope version `1`. Replacement requires explicit destructive confirmation. Merge retains all existing data, skips an entire imported league when its normalized name conflicts, and reports every skipped league. Failed validation or persistence must leave the prior state intact.
 
 ## Commit & Pull Request Guidelines
 

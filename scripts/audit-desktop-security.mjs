@@ -13,15 +13,25 @@ const failures = []
 const serializedConfig = JSON.stringify(config)
 const permissions = capability.permissions ?? []
 const enabledCapabilities = config.app?.security?.capabilities ?? []
+const allowedStateTransferPermissions = new Set([
+  'dialog:allow-open',
+  'dialog:allow-save',
+  'fs:allow-read-text-file',
+  'fs:allow-write-text-file',
+])
 
 if (serializedConfig.match(/devtools|remote-debugging/i))
   failures.push('production configuration enables developer tooling')
 if (
-  permissions.some((permission) =>
-    /^(fs|shell|sql|mcp-bridge):/.test(permission),
+  permissions.some(
+    (permission) =>
+      /^(dialog|fs|shell|sql|mcp-bridge):/.test(permission) &&
+      !allowedStateTransferPermissions.has(permission),
   )
 )
-  failures.push('main-window capabilities include a broad plugin permission')
+  failures.push(
+    'main-window capabilities include an unapproved plugin permission',
+  )
 if (enabledCapabilities.some((identifier) => identifier !== 'default'))
   failures.push('production enables a non-default capability')
 if (/#\[tauri::command\][\s\S]{0,160}(execute|query)_sql/.test(commands))

@@ -2,11 +2,11 @@
 
 ## 1. Product Summary
 
-Build a local Tauri v2 desktop application for creating and managing round robin football-style tournaments.
+Build a local-first browser and Tauri v2 desktop application for creating and managing round robin football-style tournaments.
 
 The app allows users to create leagues and seasons, enter teams in bulk, generate round robin fixtures, manually enter match scores and card counts, and view live standings with full, home-only, and away-only table modes.
 
-The app is intended for local, single-user desktop use. A Rust host persists tournament data in SQLite through a narrow, typed Tauri command bridge. The bundled application is self-contained and does not require a browser, development server, Node.js, pnpm, or Rust at runtime.
+The app is intended for local, single-user use. Browser builds persist tournament data in versioned localStorage. A Rust host persists desktop data in SQLite through a narrow, typed Tauri command bridge. The bundled desktop application is self-contained and does not require a browser, development server, Node.js, pnpm, or Rust at runtime.
 
 ---
 
@@ -22,10 +22,10 @@ The app is intended for local, single-user desktop use. A Rust host persists tou
 - PrimeVue for UI components/styling
 - Vitest for tests
 - Tauri v2 with a Rust host and capability-scoped IPC
-- SQLite in Tauri's per-user application-data directory
+- build-time-selected versioned localStorage for browsers or SQLite in Tauri's per-user application-data directory
 - Playwright for renderer accessibility, responsive, and representative workflow tests
 
-The asynchronous storage layer must remain isolated behind a service. Production uses only the native Tauri adapter; injectable in-memory and failing adapters keep renderer tests independent of a native window.
+The asynchronous storage layer must remain isolated behind one typed interface. Ordinary Vite development and browser production builds use localStorage; Tauri development and bundles use only the native adapter. Selection happens at build time, and Tauri failures never fall back to browser storage. Injectable in-memory and failing adapters keep renderer tests independent of a native window.
 
 ---
 
@@ -407,12 +407,14 @@ In filtered modes, all stats must be recalculated from the filtered match set, i
 
 ## 12. Persistence
 
-The Rust host stores all tournament state in `db.sqlite`. Production resolves the database through Tauri's platform app-data API:
+The backend is selected at build time. `pnpm dev` and `pnpm build` use the browser adapter and the versioned localStorage key `round-robin-tournament-manager:v1`; they must not create or require SQLite. `pnpm tauri:dev` and `pnpm tauri:build` use the native adapter and must not fall back to localStorage after initialization, bridge, or database failures.
+
+The Rust host stores desktop tournament state in `db.sqlite`. Desktop production resolves the database through Tauri's platform app-data API:
 
 - macOS: `~/Library/Application Support/space.andymac.roundrobin/db.sqlite`
 - Windows: `%APPDATA%\space.andymac.roundrobin\db.sqlite`
 
-The database must never be created in the application bundle, installation directory, renderer assets, current working directory, or a browser storage API. `localStorage` is not a production persistence mechanism.
+The database must never be created in the application bundle, installation directory, renderer assets, current working directory, or a browser storage API. Browser state remains origin/profile-specific and must not be read by the desktop persistence adapter.
 
 Persist:
 
@@ -426,13 +428,14 @@ Persist:
 
 Requirements:
 
-- data survives renderer reload, app relaunch, and in-place upgrades
+- browser data survives reloads for the same origin/profile; desktop data survives renderer reload, app relaunch, and in-place upgrades
 - writes are asynchronous and serialized so an older write cannot overwrite newer accepted state
 - accepted in-memory edits remain available when persistence fails
 - database busy/lock, disk-full, permission, corruption, bridge, and unexpected I/O failures produce actionable UI
 - app shutdown waits for pending persistence or presents a recoverable failure instead of silently losing data
 - versioned migrations run transactionally at startup
-- production never reads or writes application state through `localStorage`
+- desktop production never reads or writes application state through `localStorage`
+- browser production never initializes SQLite or invokes the Tauri persistence bridge
 
 Example error message:
 
@@ -441,6 +444,8 @@ Could not save changes to the desktop database. Check available disk space and p
 ```
 
 Backups are made while the application is closed. Copy `db.sqlite` together with `db.sqlite-wal` and `db.sqlite-shm` when those sidecar files exist.
+
+Portable backups use deterministic interchange JSON envelope version `1` with top-level `version` and `state` fields. The state contains every league, season, team, fixture, result, card count, and locked random tiebreaker. Import validates the complete schema and relationships before mutation. Replace requires explicit destructive confirmation and applies atomically. Merge preserves existing data, skips an entire imported league when its normalized name conflicts, reports every skipped league, and remaps identifier collisions without overwriting data. Cancellation or any read, validation, file, or persistence failure must leave the prior state intact with no partial import.
 
 ---
 
@@ -676,6 +681,8 @@ Required tests:
 
 ### Persistence
 
+- selects versioned localStorage for ordinary browser development and production builds
+- restores browser data after reload and handles missing, corrupt, quota-full, and unavailable storage safely
 - initializes and migrates a fresh SQLite database in an isolated app-data directory
 - saves and loads app state through typed Tauri commands
 - serializes overlapping writes and retains the newest accepted state
@@ -683,7 +690,11 @@ Required tests:
 - maps database lock, disk/write, permission, corruption, and bridge failures
 - preserves in-memory edits and supports retry after a recoverable failure
 - coordinates close requests with pending and failed writes
-- proves production does not access `localStorage`
+- proves desktop production does not access or fall back to `localStorage`
+- proves browser production does not create or require SQLite
+- round-trips the complete state through interchange JSON version `1`
+- rejects invalid JSON and preserves state on cancellation or failed import
+- replaces only after confirmation and merges by skipping/reporting whole conflicting leagues
 
 ---
 
@@ -694,7 +705,6 @@ The MVP does not need:
 - backend server
 - user accounts
 - cloud sync
-- import/export files
 - match dates/times
 - playoff/bracket formats
 - live match tracking
@@ -726,14 +736,16 @@ The project is done when:
 16. Final unresolved ties are randomized only after all matches are complete.
 17. Random final tiebreakers are saved and remain stable.
 18. User can switch between overall, home-only, and away-only tables.
-19. Data persists in SQLite after renderer reload and native app relaunch.
-20. Database and Tauri bridge failures are shown clearly without discarding accepted in-memory edits.
+19. Browser data persists in versioned localStorage after reload; desktop data persists in SQLite after renderer reload and native app relaunch.
+20. Browser storage, database, and Tauri bridge failures are shown clearly without discarding accepted in-memory edits or switching backends.
 21. Fixture UI uses round panels with centered score inputs between team names.
 22. Standings UI uses a dense dark table with clear aligned stat columns.
 23. Core business logic is covered by Vitest tests.
-24. Production creates `db.sqlite` only in Tauri's per-user app-data directory and stores no application state in `localStorage`.
+24. Browser production uses only versioned localStorage; desktop production creates `db.sqlite` only in Tauri's per-user app-data directory and never falls back to localStorage.
 25. The macOS bundle contains the Rust host and renderer and requires no development server or developer toolchain at runtime.
 26. Pending writes and recoverable shutdown failures cannot cause silent data loss.
+27. Versioned JSON export contains complete application state and works in browser and desktop builds.
+28. Valid imports can replace after confirmation or merge by reporting and skipping whole conflicting leagues; invalid, cancelled, or failed imports make no partial changes.
 
 ---
 

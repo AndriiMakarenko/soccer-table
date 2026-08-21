@@ -138,8 +138,11 @@ Perform this checklist for every architecture before publishing the draft:
 2. Inspect the package and confirm the native executable and renderer assets are
    present, with no `localhost:5173`, Node, pnpm, or test-adapter dependency.
 3. Install on a clean supported machine, launch, create a league/season, generate
-   fixtures, enter a result, and close cleanly.
+   fixtures, enter a result and cards, inspect all standings modes, export JSON,
+   cancel one native import and export picker, and close cleanly.
 4. Reopen and confirm the SQLite-backed data and locked tiebreaker state persist.
+   Import the exported JSON with Replace all, then separately exercise Merge with
+   a conflicting league and confirm the whole conflict is reported and skipped.
 5. Install the newer version over the old version and confirm the same data is
    available after migration.
 6. Uninstall normally, verify application binaries are removed and app data is
@@ -148,5 +151,6 @@ Perform this checklist for every architecture before publishing the draft:
    machine; confirm the next installation starts empty.
 
 Record OS version, architecture, artifact checksum, signing result, install,
-launch, upgrade, persistence, and uninstall outcomes in the release notes. Never
-publish a draft with an incomplete platform checklist.
+launch, native dialog and JSON round-trip results, upgrade, persistence, and
+uninstall outcomes in the release notes. Never publish a draft with an incomplete
+platform checklist.
