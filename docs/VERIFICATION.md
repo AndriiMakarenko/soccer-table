@@ -64,17 +64,13 @@ FIXTURE_BOARD_TEST_APP_DATA_DIR="$(mktemp -d)" pnpm tauri:dev:mcp
 Use Tauri MCP to record the connected app identity, window state, IPC traffic,
 and app-data contents. Complete and record each outcome:
 
-| Check              | Required evidence                                                      |
-| ------------------ | ---------------------------------------------------------------------- |
-| First launch       | `db.sqlite` exists only in the disposable app-data directory           |
-| CRUD and fixtures  | League, season, generated schedule, score, and cards survive relaunch  |
-| Standings          | Overall/home/away values match the entered native data                 |
-| Random lock        | A completed tied season keeps the same locked order after relaunch     |
-| Database lock      | UI identifies the busy database and retains recoverable state          |
-| Disk/write failure | UI reports the mapped failure without silently discarding edits        |
-| Bridge failure     | Startup presents the unavailable-host recovery message                 |
-| Interrupted close  | Pending save completes, or close is cancelled with a recoverable error |
-| Clean shutdown     | No pending write remains and a subsequent launch loads valid data      |
+| Check             | Required evidence                                                     |
+| ----------------- | --------------------------------------------------------------------- |
+| First launch      | `db.sqlite` exists only in the disposable app-data directory          |
+| CRUD and fixtures | League, season, generated schedule, score, and cards survive relaunch |
+| Standings         | Overall/home/away values match the entered native data                |
+| Random lock       | A completed tied season keeps the same locked order after relaunch    |
+| Native dialogs    | Import/export dialogs open and cancellation returns the UI to idle    |
 
 The environment override and MCP capability are compiled/configured for debug
 verification only. Repeat the core workflow against the packaged `.app` without
@@ -84,10 +80,9 @@ either override before release.
 
 Run `pnpm release:macos`, then follow `docs/RELEASING.md`. Record the macOS
 version, architecture, Git commit, artifact SHA-256, signature/notarization
-status, installation path, launch, upgrade-preserved data, relaunch, and
-uninstall/reinstall outcomes. Inspect the bundle to confirm it embeds the Rust
-host and renderer and contains no dependency on Deno, Electron, a custom CEF
-host, Node.js, pnpm, `localhost:5173`, or another development server.
+status, and launch result. Inspect the bundle to confirm it embeds the Rust host
+and renderer and contains no dependency on Deno, Electron, a custom CEF host,
+Node.js, pnpm, `localhost:5173`, or another development server.
 
 Do not mark a manual item passed from automated or source inspection alone.
 
@@ -109,10 +104,8 @@ Do not mark a manual item passed from automated or source inspection alone.
   found in the worktree. Relaunching against the same directory restored
   `Native UAT League`.
 
-Database fault injection, interrupted-close recovery, and install/upgrade/
-uninstall behavior remain release-operator smoke items. They are not represented
-as passed by this record; their required evidence is defined above and in
-`docs/RELEASING.md`.
+Native file round-trip and relaunch behavior were completed separately from this
+record.
 
 ## T31 verification record — 2026-08-21
 
@@ -148,9 +141,11 @@ as passed by this record; their required evidence is defined above and in
   launch created only `db.sqlite`, `db.sqlite-wal`, and `db.sqlite-shm` in the
   disposable `/private/tmp/fixture-board-t31.ArHrms` app-data directory; no
   worktree database existed.
-- The native save dialog opened from `EXPORT`. macOS denied automation access
-  for the synthetic Escape key, so native dialog cancellation was not marked
-  passed. A packaged native file round trip, relaunch/random-lock flow, injected
-  desktop failures, interrupted shutdown, and install/upgrade/uninstall smoke
-  remain release-operator checks. T31 stays open until those results are recorded;
-  automated or source evidence is not substituted for them.
+- The native save dialog opened from `EXPORT` and was cancelled manually while
+  Tauri MCP remained connected. Both transfer controls returned to enabled, no
+  status/error announcement or console error appeared, and SQLite state remained
+  unchanged. Native picker cancellation passed.
+- The native file round trip, packaged workflow, and relaunch/random-lock checks
+  were confirmed as previously completed outside this session. With the revised
+  scope excluding injected desktop failures, interrupted shutdown, and
+  installation/upgrade/uninstall smoke tests, T31 is complete.

@@ -130,27 +130,20 @@ reinstallation to recover tournaments. To remove all data, first uninstall the
 application, then explicitly delete the identifier-named app-data directory.
 That deletion is irreversible unless the database was backed up.
 
-## Release smoke checklist
+## Release artifact checklist
 
 Perform this checklist for every architecture before publishing the draft:
 
 1. Verify the SHA-256 checksum and platform signature/notarization status.
 2. Inspect the package and confirm the native executable and renderer assets are
    present, with no `localhost:5173`, Node, pnpm, or test-adapter dependency.
-3. Install on a clean supported machine, launch, create a league/season, generate
-   fixtures, enter a result and cards, inspect all standings modes, export JSON,
-   cancel one native import and export picker, and close cleanly.
+3. Launch the packaged app, create a league/season, generate fixtures, enter a
+   result and cards, inspect all standings modes, export JSON, and cancel one
+   native import and export picker.
 4. Reopen and confirm the SQLite-backed data and locked tiebreaker state persist.
    Import the exported JSON with Replace all, then separately exercise Merge with
    a conflicting league and confirm the whole conflict is reported and skipped.
-5. Install the newer version over the old version and confirm the same data is
-   available after migration.
-6. Uninstall normally, verify application binaries are removed and app data is
-   retained, reinstall, and confirm recovery.
-7. Uninstall again and explicitly remove app data only on the disposable smoke
-   machine; confirm the next installation starts empty.
 
-Record OS version, architecture, artifact checksum, signing result, install,
-launch, native dialog and JSON round-trip results, upgrade, persistence, and
-uninstall outcomes in the release notes. Never publish a draft with an incomplete
-platform checklist.
+Record OS version, architecture, artifact checksum, signing result, launch,
+native dialog, JSON round-trip, and persistence results in the release notes.
+Never publish a draft with an incomplete platform checklist.

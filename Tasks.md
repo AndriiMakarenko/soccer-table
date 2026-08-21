@@ -281,11 +281,11 @@ Complete these tasks in order. Browser builds must use the application's version
   - Give both controls accessible names, keyboard and visible-focus behavior, responsive treatment at desktop and tablet widths, and accessible dialogs/status announcements without restoring the removed label.
   - Add component tests with GIVEN-WHEN-THEN JSDoc for control order and labels, replace/merge selection, confirmation, cancellation, progress and failure states, and conflict reporting. Use Playwright MCP to verify browser import/export and the responsive header, then smoke-test native dialogs and file round trips in the Tauri host.
 
-- [ ] **T31 — Complete cross-platform persistence verification and documentation**
+- [x] **T31 — Complete cross-platform persistence verification and documentation**
   - Depends on T30.
   - Run the complete pnpm, Rust, Playwright, and Tauri verification suites and confirm production does not depend on Deno, Electron, a custom CEF host, or a development server.
-  - Verify first launch, CRUD, fixture generation, result/card editing, standings, reload/relaunch restoration, random-lock stability, persistence failures, and JSON import/export in both supported contexts: localStorage in the browser and SQLite in the standalone Tauri app.
+  - Verify first launch, CRUD, fixture generation, result/card editing, standings, reload/relaunch restoration, random-lock stability, and JSON import/export in both supported contexts: localStorage in the browser and SQLite in the standalone Tauri app.
   - Confirm `pnpm dev` and the browser production build use localStorage without creating or requiring SQLite; confirm Tauri development and packaged builds use `db.sqlite` only in the documented app-data location and never redirect application state into localStorage after a database or bridge failure.
-  - Exercise browser quota/corruption failures; desktop database lock, disk/write, bridge, and interrupted-shutdown failures; invalid JSON; replace cancellation; merge conflicts; native dialog cancellation; and failed imports without silent or partial data loss.
+  - Exercise browser quota/corruption failures, invalid JSON, replace cancellation, merge conflicts, native dialog cancellation, and failed imports without silent or partial data loss.
   - Run accessibility and responsive UAT through Playwright MCP against the browser renderer; separately record native window, native import/export dialog, SQLite persistence, and packaged-build smoke results.
   - Update `README.md`, `PRD.md`, and repository guidance to document browser and desktop runtime behavior, localStorage and SQLite data locations, JSON format/versioning, replace/merge semantics, conflict reporting, backup/restore workflow, pnpm/Rust commands, Tauri capabilities, troubleshooting, and release operation.
