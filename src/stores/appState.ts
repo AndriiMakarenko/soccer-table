@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 
 import type { AppState, League, Season } from '@/domain/models'
+import { planAppStateImport, type ImportMode } from '@/domain/stateInterchange'
 import {
   persistenceBackend,
   persistenceService,
@@ -97,6 +98,58 @@ export const useAppStateStore = defineStore('app-state', () => {
     return pendingSaves.value === 0 && saveError.value === null
   }
 
+  interface ImportResult {
+    success: boolean
+    importedLeagueNames: string[]
+    skippedLeagueNames: string[]
+    message: string
+  }
+
+  async function importState(
+    importedState: AppState,
+    mode: ImportMode,
+    replacementConfirmed = false,
+  ): Promise<ImportResult> {
+    if (mode === 'replace' && !replacementConfirmed) {
+      return {
+        success: false,
+        importedLeagueNames: [],
+        skippedLeagueNames: [],
+        message: 'Replacement was cancelled. No tournament data was changed.',
+      }
+    }
+
+    await writeQueue
+    const previous = JSON.parse(
+      JSON.stringify({ leagues: leagues.value, seasons: seasons.value }),
+    ) as AppState
+    const plan = planAppStateImport(previous, importedState, mode)
+    leagues.value = plan.state.leagues
+    seasons.value = plan.state.seasons
+    const saveResult = await persist()
+
+    if (!saveResult.success) {
+      leagues.value = previous.leagues
+      seasons.value = previous.seasons
+      return {
+        success: false,
+        importedLeagueNames: [],
+        skippedLeagueNames: [],
+        message: `${saveResult.message} The previous tournament data was restored.`,
+      }
+    }
+
+    return {
+      success: true,
+      importedLeagueNames: plan.importedLeagueNames,
+      skippedLeagueNames: plan.skippedLeagueNames,
+      message:
+        plan.skippedLeagueNames.length === 0
+          ? 'Tournament data imported successfully.'
+          : `${plan.importedLeagueNames.length} league(s) imported; ${plan.skippedLeagueNames.length} league(s) skipped because their names already exist.`,
+    }
+  }
+
   return {
     leagues,
     seasons,
@@ -110,6 +163,7 @@ export const useAppStateStore = defineStore('app-state', () => {
     load,
     persist,
     waitForPendingSaves,
+    importState,
     clearSaveError,
   }
 })

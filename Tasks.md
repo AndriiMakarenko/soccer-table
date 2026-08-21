@@ -262,7 +262,7 @@ Complete these tasks in order. Browser builds must use the application's version
   - Preserve serialized write ordering, recoverable in-memory edits, hydration state, retry behavior, and platform-appropriate startup/error presentation for both adapters.
   - Add focused Vitest coverage, with GIVEN-WHEN-THEN JSDoc, for both build configurations, browser hydration and reload restoration, corrupt/missing storage, quota failures, Tauri failures without fallback, and write ordering.
 
-- [ ] **T29 — Implement versioned JSON export and validated replace-or-merge import**
+- [x] **T29 — Implement versioned JSON export and validated replace-or-merge import**
   - Depends on T28.
   - Define one versioned JSON interchange envelope for the complete application state, including leagues, seasons, teams, fixtures, results, cards, and locked random tiebreakers; make export deterministic and independent of the active persistence backend.
   - Validate the envelope version and the complete nested domain model before changing in-memory or persisted state; reject malformed, unsupported, or semantically invalid files with actionable feedback and no partial changes.
