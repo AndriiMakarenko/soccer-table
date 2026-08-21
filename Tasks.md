@@ -249,11 +249,43 @@ Complete these tasks in order. Each top-level task is deliberately scoped to one
   - Document externally supplied macOS signing/notarization credentials while keeping unsigned local builds available; release builds remain fully manual and require no hosted automation.
   - Generate a checksum and release manifest for the prepared macOS artifact, and smoke-test installation, launch, upgrade-preserved data, and uninstall behavior.
 
-- [ ] **T28 — Complete Tauri migration verification and documentation**
+## Cross-Platform Persistence and JSON Data Transfer
+
+Complete these tasks in order. Browser builds must use the application's versioned localStorage implementation, while renderer builds intended for the Tauri app must use SQLite in its platform app-data directory. Select the persistence backend at build time with an explicit Vite configuration flag, while keeping both backends behind the same typed asynchronous persistence interface so stores and feature components remain platform-agnostic. The ordinary `pnpm dev` and browser production build must produce the browser/localStorage application; Tauri development and bundling commands must compile the renderer with the desktop/SQLite backend.
+
+- [x] **T28 — Restore browser localStorage persistence with build-time adapter selection**
   - Depends on T27.
-  - Run the complete pnpm, Rust, and Tauri verification suites and confirm production does not depend on Deno, Electron, a custom CEF host, localStorage persistence, or a development server.
-  - Verify first launch, CRUD, fixture generation, result/card editing, standings, relaunch restoration, random-lock stability, persistence failures, and shutdown coordination across automated renderer tests and native macOS smoke tests.
-  - Confirm `db.sqlite` is created only in the documented Tauri app-data location and no application state is stored in localStorage.
-  - Exercise database lock, disk/write failure, bridge failure, and interrupted-shutdown recovery without silent data loss.
-  - Run accessibility and responsive UAT through Playwright MCP against the renderer; separately record native window and packaged-build smoke results.
-  - Update `README.md`, `PRD.md`, and repository guidance to describe the Tauri v2 desktop product, pnpm/Rust workflow, SQLite persistence, platform prerequisites, backup location, capability model, troubleshooting, and release process.
+  - Restore the proven versioned localStorage load/save implementation from Git history, including complete `AppState` validation, safe empty state for missing or corrupt data, quota detection, and accurate browser-specific error messages.
+  - Adapt the restored implementation to the current asynchronous persistence contract and select the localStorage or Tauri SQLite adapter from a typed build-time Vite flag rather than runtime environment detection.
+  - Keep `pnpm dev` and the ordinary browser production build configured for localStorage. Configure `pnpm tauri:dev`, Tauri's `beforeDevCommand`, and Tauri's `beforeBuildCommand` to build or serve the renderer with the SQLite adapter.
+  - Ensure browser builds do not include or invoke the native persistence path, and ensure Tauri builds do not fall back to localStorage when Tauri initialization, bridge access, or SQLite persistence fails.
+  - Preserve serialized write ordering, recoverable in-memory edits, hydration state, retry behavior, and platform-appropriate startup/error presentation for both adapters.
+  - Add focused Vitest coverage, with GIVEN-WHEN-THEN JSDoc, for both build configurations, browser hydration and reload restoration, corrupt/missing storage, quota failures, Tauri failures without fallback, and write ordering.
+
+- [x] **T29 — Implement versioned JSON export and validated replace-or-merge import**
+  - Depends on T28.
+  - Define one versioned JSON interchange envelope for the complete application state, including leagues, seasons, teams, fixtures, results, cards, and locked random tiebreakers; make export deterministic and independent of the active persistence backend.
+  - Validate the envelope version and the complete nested domain model before changing in-memory or persisted state; reject malformed, unsupported, or semantically invalid files with actionable feedback and no partial changes.
+  - After a valid file is selected, ask the user whether to replace all existing data or merge the import into it; require explicit destructive confirmation before replacement.
+  - Apply replacement as one atomic state change. For merge, preserve all existing data and import only leagues whose names do not conflict with an existing league name; skip an entire conflicting imported league together with all of its seasons.
+  - Preserve relationships within each accepted imported league and safely resolve technical identifier collisions without overwriting existing records. Persist the final replacement or merge exactly once and restore the prior in-memory state if persistence fails.
+  - Return a structured import result. When merge skips conflicts, show a completion dialog listing every league that was not imported because of its naming conflict; show an unambiguous success result when nothing was skipped.
+  - Add focused Vitest coverage, with GIVEN-WHEN-THEN JSDoc, for round-trip fidelity, version/schema rejection, replace cancellation and confirmation, successful replacement, conflict-free merge, whole-league conflict skipping and reporting, identifier collisions, atomic persistence failure, and imports containing multiple conflicts.
+
+- [x] **T30 — Add cross-platform IMPORT and EXPORT controls**
+  - Depends on T29.
+  - Replace the `Stored locally` header badge with two controls in the same compact outlined visual style and in this order: `IMPORT`, then `EXPORT`.
+  - Keep `AppShell` focused on layout by moving file-transfer orchestration, choice/confirmation dialogs, progress state, and result/error presentation into focused typed components or composables with explicit props and events.
+  - In a browser, use the browser file-selection mechanism for import and a downloaded `.json` file for export. In the desktop app, use native Tauri open/save dialogs and narrowly scoped native file access, granting only the permissions required by the main window.
+  - Disable duplicate actions while an import/export operation or persistence write is pending, handle picker cancellation without an error, and preserve the current state on read, validation, dialog, serialization, write, or persistence failures.
+  - Give both controls accessible names, keyboard and visible-focus behavior, responsive treatment at desktop and tablet widths, and accessible dialogs/status announcements without restoring the removed label.
+  - Add component tests with GIVEN-WHEN-THEN JSDoc for control order and labels, replace/merge selection, confirmation, cancellation, progress and failure states, and conflict reporting. Use Playwright MCP to verify browser import/export and the responsive header, then smoke-test native dialogs and file round trips in the Tauri host.
+
+- [x] **T31 — Complete cross-platform persistence verification and documentation**
+  - Depends on T30.
+  - Run the complete pnpm, Rust, Playwright, and Tauri verification suites and confirm production does not depend on Deno, Electron, a custom CEF host, or a development server.
+  - Verify first launch, CRUD, fixture generation, result/card editing, standings, reload/relaunch restoration, random-lock stability, and JSON import/export in both supported contexts: localStorage in the browser and SQLite in the standalone Tauri app.
+  - Confirm `pnpm dev` and the browser production build use localStorage without creating or requiring SQLite; confirm Tauri development and packaged builds use `db.sqlite` only in the documented app-data location and never redirect application state into localStorage after a database or bridge failure.
+  - Exercise browser quota/corruption failures, invalid JSON, replace cancellation, merge conflicts, native dialog cancellation, and failed imports without silent or partial data loss.
+  - Run accessibility and responsive UAT through Playwright MCP against the browser renderer; separately record native window, native import/export dialog, SQLite persistence, and packaged-build smoke results.
+  - Update `README.md`, `PRD.md`, and repository guidance to document browser and desktop runtime behavior, localStorage and SQLite data locations, JSON format/versioning, replace/merge semantics, conflict reporting, backup/restore workflow, pnpm/Rust commands, Tauri capabilities, troubleshooting, and release operation.

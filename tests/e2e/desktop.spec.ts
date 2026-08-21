@@ -1,19 +1,19 @@
 import { expect, test } from '@playwright/test'
 
-import { installTauriPersistenceMock } from './tauriMock'
+const STORAGE_KEY = 'round-robin-tournament-manager:v1'
 
 test.describe('desktop tournament workflow', () => {
   /**
-   * GIVEN an empty isolated desktop persistence adapter
+   * GIVEN an empty browser localStorage persistence adapter
    * WHEN a user creates a league and season, records a result, and reloads
    * THEN CRUD, fixtures, standings, accessibility, and restoration remain usable
    */
   test('covers the representative persisted tournament journey', async ({
-    context,
     page,
   }) => {
-    const persistence = await installTauriPersistenceMock(context)
     await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
+    await page.reload()
 
     await page.getByRole('button', { name: 'Create your first league' }).click()
     await page
@@ -64,14 +64,21 @@ test.describe('desktop tournament workflow', () => {
 
     await page.reload()
     await expect(page.getByRole('heading', { name: 'Standings' })).toBeVisible()
-    expect(
-      persistence.readState().seasons[0]?.matches[0]?.homeScore,
-    ).not.toBeNull()
+    const savedHomeScore = await page.evaluate((storageKey) => {
+      const serialized = localStorage.getItem(storageKey)
+      if (serialized === null) return undefined
+
+      const envelope = JSON.parse(serialized) as {
+        state?: { seasons?: Array<{ matches?: Array<{ homeScore?: number }> }> }
+      }
+      return envelope.state?.seasons?.[0]?.matches?.[0]?.homeScore
+    }, STORAGE_KEY)
+    expect(savedHomeScore).toBeGreaterThanOrEqual(0)
     await expect(page.locator('body')).not.toHaveCSS('overflow-x', 'scroll')
   })
 
   /**
-   * GIVEN the native adapter reports a recoverable disk-full failure
+   * GIVEN browser localStorage reports a recoverable quota failure
    * WHEN the user creates a league
    * THEN the unsaved edit remains visible and an accessible global error is shown
    */
@@ -79,8 +86,23 @@ test.describe('desktop tournament workflow', () => {
     context,
     page,
   }) => {
-    const persistence = await installTauriPersistenceMock(context)
-    persistence.failNextSave()
+    await context.addInitScript((storageKey) => {
+      localStorage.clear()
+      const originalSetItem = Storage.prototype.setItem
+      let failNextSave = true
+
+      Storage.prototype.setItem = function (key, value) {
+        if (failNextSave && key === storageKey) {
+          failNextSave = false
+          throw new DOMException(
+            'Storage quota exceeded.',
+            'QuotaExceededError',
+          )
+        }
+
+        return originalSetItem.call(this, key, value)
+      }
+    }, STORAGE_KEY)
     await page.goto('/')
 
     await page.getByRole('button', { name: 'Create your first league' }).click()
@@ -91,7 +113,9 @@ test.describe('desktop tournament workflow', () => {
       .getByRole('button', { name: 'Create league', exact: true })
       .click()
 
-    await expect(page.getByRole('alert')).toContainText('disk is full')
+    await expect(page.getByRole('alert')).toContainText(
+      'browser storage is full',
+    )
     await expect(
       page.getByRole('heading', { name: 'Unsaved League' }),
     ).toBeVisible()

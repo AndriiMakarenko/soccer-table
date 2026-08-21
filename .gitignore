@@ -12,6 +12,7 @@ node_modules
 .vite
 
 # Built output directories
+/build/
 dist
 src-tauri/target/
 release-artifacts/

@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import StateTransferControls from '@/components/state-transfer/StateTransferControls.vue'
+</script>
+
 <template>
   <div class="app-shell app-dark">
     <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -10,7 +14,7 @@
           <small class="brand-kicker">Tournament control</small>
         </span>
       </RouterLink>
-      <span class="local-badge">Stored locally</span>
+      <StateTransferControls />
     </header>
 
     <main id="main-content" class="shell-main" tabindex="-1">
@@ -117,16 +121,6 @@
   text-transform: uppercase;
 }
 
-.local-badge {
-  padding: 0.45rem 0.7rem;
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  color: var(--color-muted);
-  font: 600 0.7rem/1 var(--font-utility);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .shell-main {
   width: min(100% - 4rem, 76rem);
   margin: 0 auto;
@@ -144,9 +138,6 @@
   }
   .shell-main {
     width: min(100% - 2rem, 76rem);
-  }
-  .local-badge {
-    display: none;
   }
 }
 

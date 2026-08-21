@@ -13,7 +13,8 @@ import { createMemoryHistory, type Router } from 'vue-router'
 
 import type { AppState, League, Match, Season } from '@/domain/models'
 import { createAppRouter } from '@/router'
-import { persistenceService, STORAGE_FULL_MESSAGE } from '@/services/storage'
+import { STORAGE_FULL_MESSAGE } from '@/services/browserPersistence'
+import { persistenceService } from '@/services/storage'
 import { useAppStateStore } from '@/stores/appState'
 
 import App from './App.vue'

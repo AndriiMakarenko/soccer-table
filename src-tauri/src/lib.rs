@@ -3,8 +3,10 @@ pub mod database;
 pub mod repository;
 
 pub fn run() {
-    let mut builder = tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_sql::Builder::default().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             use tauri::Manager;
             app.manage(database::DatabaseState::default());
@@ -12,9 +14,7 @@ pub fn run() {
         });
 
     #[cfg(debug_assertions)]
-    {
-        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
-    }
+    let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
 
     builder
         .invoke_handler(tauri::generate_handler![
