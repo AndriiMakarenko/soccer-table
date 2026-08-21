@@ -4,8 +4,10 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { computed } from 'vue'
 
 import { useAppStateStore } from '@/stores/appState'
+import { persistenceBackend } from '@/services/storage'
 
 const appState = useAppStateStore()
+const isDesktop = persistenceBackend === 'tauri'
 
 const guidance = computed(() => {
   switch (appState.startupErrorCode) {
@@ -20,7 +22,9 @@ const guidance = computed(() => {
     case 'bridge-unavailable':
       return 'This is a desktop application. Launch Fixture Board through its Tauri desktop host.'
     default:
-      return 'Check the database location and permissions, then retry. No existing data was replaced.'
+      return isDesktop
+        ? 'Check the database location and permissions, then retry. No existing data was replaced.'
+        : 'Check that browser storage is enabled, then retry. No existing data was replaced.'
   }
 })
 </script>
@@ -31,11 +35,15 @@ const guidance = computed(() => {
       v-if="appState.isLoading"
       aria-label="Starting Fixture Board"
     />
-    <p class="eyebrow">Desktop startup</p>
+    <p class="eyebrow">
+      {{ isDesktop ? 'Desktop startup' : 'Browser startup' }}
+    </p>
     <h1 id="startup-title">
       {{
         appState.isLoading
-          ? 'Opening your tournament database…'
+          ? isDesktop
+            ? 'Opening your tournament database…'
+            : 'Restoring your tournaments…'
           : 'Fixture Board could not start.'
       }}
     </h1>

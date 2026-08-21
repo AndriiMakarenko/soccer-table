@@ -12,7 +12,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 
 import type { AppState, League, Season } from '@/domain/models'
-import { persistenceService, STORAGE_FULL_MESSAGE } from '@/services/storage'
+import { STORAGE_FULL_MESSAGE } from '@/services/browserPersistence'
+import { persistenceService } from '@/services/storage'
 import { useLeagueStore } from '@/stores/league'
 
 import DashboardView from './DashboardView.vue'

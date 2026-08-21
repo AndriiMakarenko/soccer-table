@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:tauri": "vite --mode tauri",
     "build": "vue-tsc -b && vite build",
+    "build:tauri": "vue-tsc -b && vite build --mode tauri",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
     "check:desktop": "pnpm check && pnpm test:e2e && pnpm audit:desktop && cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings && cargo test --manifest-path src-tauri/Cargo.toml && cargo tauri build --debug --no-bundle",
     "format": "prettier --write .",

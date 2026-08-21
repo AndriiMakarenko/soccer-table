@@ -2,7 +2,11 @@ import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 
 import type { AppState, League, Season } from '@/domain/models'
-import { persistenceService, type SaveResult } from '@/services/storage'
+import {
+  persistenceBackend,
+  persistenceService,
+  type SaveResult,
+} from '@/services/storage'
 import {
   NativePersistenceError,
   type PersistenceErrorCode,
@@ -42,7 +46,9 @@ export const useAppStateStore = defineStore('app-state', () => {
       startupError.value =
         error instanceof Error
           ? error.message
-          : 'The desktop database could not be loaded.'
+          : persistenceBackend === 'tauri'
+            ? 'The desktop database could not be loaded.'
+            : 'Browser storage could not be loaded.'
       startupErrorCode.value =
         error instanceof NativePersistenceError ? error.code : 'unexpected'
     } finally {
@@ -68,7 +74,9 @@ export const useAppStateStore = defineStore('app-state', () => {
         success: false,
         reason: 'native-exception',
         message:
-          'Could not save changes to the desktop database. Please try again.',
+          persistenceBackend === 'tauri'
+            ? 'Could not save changes to the desktop database. Please try again.'
+            : 'Could not save changes to browser storage. Please try again.',
       }))
       .then((result) => {
         saveError.value = result.success ? null : result.message

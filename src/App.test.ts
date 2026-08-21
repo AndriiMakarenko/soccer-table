@@ -53,7 +53,7 @@ describe('application shell', () => {
   })
 
   /**
-   * GIVEN desktop database initialization is still pending
+   * GIVEN browser persistence hydration is still pending
    * WHEN the application shell renders
    * THEN CRUD routes remain hidden behind an accessible startup state
    */
@@ -68,7 +68,7 @@ describe('application shell', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'Opening your tournament database…',
+        name: 'Restoring your tournaments…',
       }),
     ).toBeInTheDocument()
     expect(
