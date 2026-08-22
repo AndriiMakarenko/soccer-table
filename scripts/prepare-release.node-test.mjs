@@ -34,7 +34,7 @@ test('prepares a checksummed release manifest', async () => {
         ...process.env,
         RELEASE_ARCH: 'aarch64',
         RELEASE_COMMIT: '0123456789abcdef',
-        RELEASE_EXPECTED_VERSION: '0.1.0',
+        RELEASE_EXPECTED_VERSION: '1.0.1',
         RELEASE_OUTPUT_DIRECTORY: outputPath,
         RELEASE_PLATFORM: 'macos',
       },
@@ -54,7 +54,7 @@ test('prepares a checksummed release manifest', async () => {
   )
 
   assert.equal(manifest.identifier, 'space.andymac.roundrobin')
-  assert.equal(manifest.version, '0.1.0')
+  assert.equal(manifest.version, '1.0.1')
   assert.equal(manifest.commit, '0123456789abcdef')
   assert.deepEqual(manifest.artifacts, [
     {
@@ -91,5 +91,5 @@ test('rejects a mismatched release version', async () => {
   )
 
   assert.notEqual(result.status, 0)
-  assert.match(result.stderr, /does not match application version 0\.1\.0/)
+  assert.match(result.stderr, /does not match application version 1\.0\.1/)
 })

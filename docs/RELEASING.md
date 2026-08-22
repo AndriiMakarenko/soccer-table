@@ -63,7 +63,7 @@ architecture and commit SHA:
 ```bash
 RELEASE_PLATFORM=macos \
 RELEASE_ARCH=aarch64 \
-RELEASE_EXPECTED_VERSION=0.1.0 \
+RELEASE_EXPECTED_VERSION=1.0.1 \
 RELEASE_COMMIT=<full-commit-sha> \
 RELEASE_OUTPUT_DIRECTORY=release-artifacts/macos-aarch64 \
 pnpm release:prepare \
@@ -75,7 +75,7 @@ On Windows PowerShell, prepare the NSIS release directory with:
 ```powershell
 $env:RELEASE_PLATFORM = 'windows'
 $env:RELEASE_ARCH = 'x86_64'
-$env:RELEASE_EXPECTED_VERSION = '0.1.0'
+$env:RELEASE_EXPECTED_VERSION = '1.0.1'
 $env:RELEASE_COMMIT = '<full-commit-sha>'
 $env:RELEASE_OUTPUT_DIRECTORY = 'release-artifacts/windows-x86_64'
 $installer = (Get-ChildItem 'src-tauri/target/release/bundle/nsis/*.exe').FullName
