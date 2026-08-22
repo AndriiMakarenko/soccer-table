@@ -69,6 +69,9 @@ describe('season fixtures view', () => {
     await fireEvent.click(
       screen.getAllByRole('button', { name: 'Edit results for Round 1' })[0]!,
     )
+    for (const control of screen.getAllByRole('spinbutton')) {
+      expect(control).toHaveAttribute('spellcheck', 'false')
+    }
     await fireEvent.update(
       screen.getByRole('spinbutton', { name: 'Northside FC score' }),
       '3',

@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import SeasonSetupForm, {
   type SeasonSetupValues,
 } from '@/components/seasons/SeasonSetupForm.vue'
+import StandingsRosterImport from '@/components/seasons/StandingsRosterImport.vue'
 import GlobalPersistenceError from '@/components/layout/GlobalPersistenceError.vue'
 import NotFoundState from '@/components/layout/NotFoundState.vue'
 import { useLeagueStore } from '@/stores/league'
@@ -18,6 +19,7 @@ const seasonStore = useSeasonStore()
 const isSubmitting = shallowRef(false)
 const submissionError = shallowRef<string | null>(null)
 const pendingSeasonId = shallowRef<string | null>(null)
+const teamInput = shallowRef('')
 
 const leagueId = computed(() => String(route.params.leagueId))
 const league = computed(() =>
@@ -76,6 +78,13 @@ async function openSeason(seasonId: string): Promise<void> {
     params: { leagueId: leagueId.value, seasonId },
   })
 }
+
+function appendImportedNames(names: string[]): void {
+  const existing = teamInput.value.trim()
+  teamInput.value = existing
+    ? `${existing}\n${names.join('\n')}`
+    : names.join('\n')
+}
 </script>
 
 <template>
@@ -108,7 +117,16 @@ async function openSeason(seasonId: string): Promise<void> {
       {{ submissionError }}
     </Message>
 
+    <StandingsRosterImport
+      :leagues="leagueStore.leagues"
+      :seasons="seasonStore.seasons"
+      :draft-input="teamInput"
+      :disabled="Boolean(pendingSeasonId)"
+      @import="appendImportedNames"
+    />
+
     <SeasonSetupForm
+      v-model:team-input="teamInput"
       :submitting="isSubmitting"
       :save-pending="Boolean(pendingSeasonId)"
       @submit="createSeason"
@@ -168,6 +186,10 @@ async function openSeason(seasonId: string): Promise<void> {
 }
 
 .submission-error {
+  margin-bottom: 1rem;
+}
+
+.new-season :deep(.roster-import) {
   margin-bottom: 1rem;
 }
 </style>

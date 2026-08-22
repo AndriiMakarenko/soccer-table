@@ -4,6 +4,10 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
+import {
+  editableInputAttributes,
+  freeTextInputAttributes,
+} from '@/components/forms/editableInputAttributes'
 import { shallowRef, watch } from 'vue'
 
 export interface RegenerateFixturesValues {
@@ -69,7 +73,12 @@ watch(
 
       <div class="field-group">
         <label for="regenerate-team-input">Team names</label>
-        <Textarea id="regenerate-team-input" v-model="teamInput" rows="8" />
+        <Textarea
+          id="regenerate-team-input"
+          v-model="teamInput"
+          v-bind="freeTextInputAttributes"
+          rows="8"
+        />
         <small
           >One team per line. Team names stay locked outside this flow.</small
         >
@@ -78,6 +87,7 @@ watch(
       <div class="field-group leg-field">
         <label for="regenerate-leg-count">Number of legs</label>
         <InputText
+          v-bind="editableInputAttributes"
           id="regenerate-leg-count"
           v-model="legCount"
           type="number"

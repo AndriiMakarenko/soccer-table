@@ -7,6 +7,10 @@ import { reactive, shallowRef, watch } from 'vue'
 
 import { parseBulkTeamInput } from '@/stores/season'
 import { validateLegCount, validateName } from '@/domain/validation'
+import {
+  editableInputAttributes,
+  freeTextInputAttributes,
+} from '@/components/forms/editableInputAttributes'
 
 export interface SeasonSetupValues {
   name: string
@@ -18,6 +22,7 @@ const props = defineProps<{
   submitting: boolean
   savePending: boolean
 }>()
+const teamInput = defineModel<string>('teamInput', { default: '' })
 
 const emit = defineEmits<{
   submit: [values: SeasonSetupValues]
@@ -25,7 +30,6 @@ const emit = defineEmits<{
 
 const form = reactive({
   name: '',
-  teamInput: '',
   legCount: '2',
 })
 const errors = reactive({
@@ -46,7 +50,7 @@ function submit(): void {
   if (props.submitting || submissionQueued.value) return
 
   const nameResult = validateName(form.name, 'Season name')
-  const teamsResult = parseBulkTeamInput(form.teamInput)
+  const teamsResult = parseBulkTeamInput(teamInput.value)
   const legsResult = validateLegCount(form.legCount)
 
   errors.name = nameResult.valid ? '' : nameResult.error
@@ -69,6 +73,7 @@ function submit(): void {
     <div class="field-group">
       <label class="field-label" for="season-name">Season name</label>
       <InputText
+        v-bind="freeTextInputAttributes"
         id="season-name"
         v-model="form.name"
         autocomplete="off"
@@ -95,8 +100,9 @@ function submit(): void {
         <span>One team per line · 2–64 teams</span>
       </div>
       <Textarea
+        v-bind="freeTextInputAttributes"
         id="team-names"
-        v-model="form.teamInput"
+        v-model="teamInput"
         rows="10"
         placeholder="Northside FC\nRiverside United\nAthletic Club"
         :disabled="savePending"
@@ -123,6 +129,7 @@ function submit(): void {
     <div class="field-group">
       <label class="field-label" for="leg-count">Number of legs</label>
       <InputText
+        v-bind="editableInputAttributes"
         id="leg-count"
         v-model="form.legCount"
         type="number"

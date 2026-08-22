@@ -2,6 +2,7 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import { freeTextInputAttributes } from '@/components/forms/editableInputAttributes'
 import Message from 'primevue/message'
 import { shallowRef, watch } from 'vue'
 
@@ -60,6 +61,7 @@ function cancel(): void {
     <form class="name-form" @submit.prevent="submit">
       <label class="field-label" for="entity-name">{{ fieldLabel }}</label>
       <InputText
+        v-bind="freeTextInputAttributes"
         id="entity-name"
         v-model="name"
         autofocus

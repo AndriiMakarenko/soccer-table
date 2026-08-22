@@ -3,7 +3,7 @@ import StateTransferControls from '@/components/state-transfer/StateTransferCont
 </script>
 
 <template>
-  <div class="app-shell app-dark">
+  <div class="app-shell app-dark" spellcheck="false">
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <header class="shell-header">

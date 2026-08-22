@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { editableInputAttributes } from '@/components/forms/editableInputAttributes'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { reactive, shallowRef, watch } from 'vue'
@@ -201,6 +202,7 @@ function resetDrafts(): void {
                 {{ teamName(match.homeTeamId) }} score
               </label>
               <input
+                v-bind="editableInputAttributes"
                 :id="`${match.id}-home-score`"
                 v-model="drafts[match.id]!.homeScore"
                 class="score-input"
@@ -220,6 +222,7 @@ function resetDrafts(): void {
                 {{ teamName(match.awayTeamId) }} score
               </label>
               <input
+                v-bind="editableInputAttributes"
                 :id="`${match.id}-away-score`"
                 v-model="drafts[match.id]!.awayScore"
                 class="score-input"
@@ -255,6 +258,7 @@ function resetDrafts(): void {
           <label>
             <span>{{ teamName(match.homeTeamId) }} yellow cards</span>
             <input
+              v-bind="editableInputAttributes"
               :id="`${match.id}-homeYellowCards`"
               v-model="drafts[match.id]!.homeYellowCards"
               type="number"
@@ -272,6 +276,7 @@ function resetDrafts(): void {
           <label>
             <span>{{ teamName(match.homeTeamId) }} red cards</span>
             <input
+              v-bind="editableInputAttributes"
               :id="`${match.id}-homeRedCards`"
               v-model="drafts[match.id]!.homeRedCards"
               type="number"
@@ -289,6 +294,7 @@ function resetDrafts(): void {
           <label>
             <span>{{ teamName(match.awayTeamId) }} yellow cards</span>
             <input
+              v-bind="editableInputAttributes"
               :id="`${match.id}-awayYellowCards`"
               v-model="drafts[match.id]!.awayYellowCards"
               type="number"
@@ -306,6 +312,7 @@ function resetDrafts(): void {
           <label>
             <span>{{ teamName(match.awayTeamId) }} red cards</span>
             <input
+              v-bind="editableInputAttributes"
               :id="`${match.id}-awayRedCards`"
               v-model="drafts[match.id]!.awayRedCards"
               type="number"

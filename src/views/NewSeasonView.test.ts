@@ -10,7 +10,8 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 
-import type { AppState, League } from '@/domain/models'
+import { generateRoundRobinFixtures } from '@/domain/fixtures'
+import type { AppState, League, Season, Team } from '@/domain/models'
 import { STORAGE_FULL_MESSAGE } from '@/services/browserPersistence'
 import { persistenceService } from '@/services/storage'
 import { useLeagueStore } from '@/stores/league'
@@ -227,6 +228,99 @@ describe('new season view', () => {
       screen.getByRole('link', { name: 'Return to leagues' }),
     ).toHaveAttribute('href', '/')
   })
+
+  /**
+   * GIVEN no completed source seasons exist
+   * WHEN the new-season setup opens
+   * THEN import unavailability is explained without disabling manual creation
+   */
+  it('keeps manual creation available when roster import has no sources', async () => {
+    await renderView(`/leagues/${league.id}/seasons/new`)
+
+    expect(
+      screen.getByText(
+        /Import is unavailable because there are no completed seasons/,
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Team names' })).toBeEnabled()
+    const controls = [
+      ...screen.getAllByRole('textbox'),
+      ...screen.getAllByRole('spinbutton'),
+    ]
+    for (const control of controls) {
+      expect(control).toHaveAttribute('spellcheck', 'false')
+    }
+    expect(
+      screen.getByRole('textbox', { name: 'Season name' }),
+    ).toHaveAttribute('autocorrect', 'off')
+    expect(screen.getByRole('textbox', { name: 'Team names' })).toHaveAttribute(
+      'autocapitalize',
+      'off',
+    )
+  })
+
+  /**
+   * GIVEN a completed season in another league and a manually entered team
+   * WHEN standings rows four through twenty are imported
+   * THEN exactly seventeen copied names are appended to the editable draft without saving
+   */
+  it('appends a cross-league standings range to manual draft names', async () => {
+    const sourceLeague = createLeague('league-2', 'Championship')
+    state.leagues.push(sourceLeague)
+    state.seasons.push(createCompletedSeason(sourceLeague.id, 20))
+    await renderView(`/leagues/${league.id}/seasons/new`)
+
+    const teamInput = screen.getByRole('textbox', { name: 'Team names' })
+    await fireEvent.update(teamInput, 'Promoted United')
+    await fireEvent.update(
+      screen.getByRole('spinbutton', { name: 'From position' }),
+      '4',
+    )
+    await fireEvent.update(
+      screen.getByRole('spinbutton', { name: 'To position' }),
+      '20',
+    )
+    expect(screen.getByText(/Rows 4–20 · 17 teams/)).toBeInTheDocument()
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Add teams to draft' }),
+    )
+
+    expect(teamInput).toHaveValue(
+      ['Promoted United', ...teamNames(20).slice(3, 20)].join('\n'),
+    )
+    expect(persistenceService.save).not.toHaveBeenCalled()
+    await fireEvent.update(teamInput, 'Replacement FC\nSecond Club')
+    expect(teamInput).toHaveValue('Replacement FC\nSecond Club')
+  })
+
+  /**
+   * GIVEN a draft name that conflicts case-insensitively with the selected source range
+   * WHEN import is attempted
+   * THEN actionable feedback receives focus and the draft remains unchanged
+   */
+  it('focuses duplicate import feedback without changing the draft', async () => {
+    const sourceLeague = createLeague('league-2', 'Championship')
+    state.leagues.push(sourceLeague)
+    state.seasons.push(createCompletedSeason(sourceLeague.id, 4))
+    await renderView(`/leagues/${league.id}/seasons/new`)
+
+    const teamInput = screen.getByRole('textbox', { name: 'Team names' })
+    await fireEvent.update(teamInput, 'team 1')
+    await fireEvent.update(
+      screen.getByRole('spinbutton', { name: 'To position' }),
+      '2',
+    )
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Add teams to draft' }),
+    )
+
+    const feedback = await screen.findByRole('alert')
+    expect(feedback).toHaveTextContent(
+      'Duplicate team names are not allowed: Team 1',
+    )
+    expect(feedback).toHaveFocus()
+    expect(teamInput).toHaveValue('team 1')
+  })
 })
 
 async function fillValidForm(): Promise<void> {
@@ -284,4 +378,47 @@ async function renderView(path: string): Promise<Router> {
 
 function cloneState(source: AppState): AppState {
   return JSON.parse(JSON.stringify(source)) as AppState
+}
+
+function createLeague(id: string, name: string): League {
+  return {
+    id,
+    name,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  }
+}
+
+function teamNames(count: number): string[] {
+  return Array.from({ length: count }, (_, index) => `Team ${index + 1}`)
+}
+
+function createCompletedSeason(leagueId: string, count: number): Season {
+  const teams: Team[] = teamNames(count).map((name, index) => ({
+    id: `source-team-${index + 1}`,
+    name,
+  }))
+  const matches = generateRoundRobinFixtures(teams, 1).map((match) => ({
+    ...match,
+    homeScore: 0,
+    awayScore: 0,
+  }))
+
+  return {
+    id: 'source-season',
+    leagueId,
+    name: 'Completed source',
+    teams,
+    matches,
+    legCount: 1,
+    randomTiebreakerLocks: [
+      {
+        mode: 'overall',
+        teamIds: teams.map((team) => team.id).sort(),
+        orderedTeamIds: teams.map((team) => team.id),
+      },
+    ],
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  }
 }

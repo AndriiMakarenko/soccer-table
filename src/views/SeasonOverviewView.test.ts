@@ -163,6 +163,12 @@ describe('season overview view', () => {
       name: 'Regenerate fixtures',
     })
     expect(
+      within(dialog).getByRole('textbox', { name: 'Team names' }),
+    ).toHaveAttribute('spellcheck', 'false')
+    expect(
+      within(dialog).getByRole('spinbutton', { name: 'Number of legs' }),
+    ).toHaveAttribute('spellcheck', 'false')
+    expect(
       within(dialog).getByText(
         'Regenerating will permanently delete every recorded score and card.',
       ),

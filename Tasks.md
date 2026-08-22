@@ -289,3 +289,37 @@ Complete these tasks in order. Browser builds must use the application's version
   - Exercise browser quota/corruption failures, invalid JSON, replace cancellation, merge conflicts, native dialog cancellation, and failed imports without silent or partial data loss.
   - Run accessibility and responsive UAT through Playwright MCP against the browser renderer; separately record native window, native import/export dialog, SQLite persistence, and packaged-build smoke results.
   - Update `README.md`, `PRD.md`, and repository guidance to document browser and desktop runtime behavior, localStorage and SQLite data locations, JSON format/versioning, replace/merge semantics, conflict reporting, backup/restore workflow, pnpm/Rust commands, Tauri capabilities, troubleshooting, and release operation.
+
+## Season Roster Carry-Forward
+
+- [x] **T32 — Select a finalized standings range for a new season roster**
+  - Depends on T31.
+  - Add a pure, typed roster-selection operation that accepts a completed source season and an inclusive, one-based start/end range, then returns the team names occupying those rows in the source season's finalized Overall standings order.
+  - Treat the requested range as ordered table rows rather than the displayed `POS` values, so selecting rows 4–20 always returns exactly 17 teams even when competition ranking previously displayed shared positions; use the completed season's persisted random tiebreaker locks to preserve its final deterministic order.
+  - Allow the source season to belong to the destination league or any other league, supporting promotion and relegation workflows across leagues.
+  - Copy only team names. Never carry over team IDs, fixtures, results, card counts, leg count, timestamps, or random tiebreaker locks into the new season.
+  - Reject incomplete source seasons, non-integer or out-of-bounds positions, reversed ranges, and selections that would make the destination roster violate the existing case-insensitive uniqueness or 2–64 team rules; failures must not partially change the draft roster or persisted application state.
+  - Add focused Vitest coverage with GIVEN-WHEN-THEN JSDoc for inclusive range selection, cross-league sources, shared-position ordering, deterministic locked ordering, invalid ranges, incomplete seasons, duplicate names, and the 64-team boundary.
+
+- [x] **T33 — Add standings-range import to the new-season setup flow**
+  - Depends on T32.
+  - Extend new-season setup with an optional `Import from a previous season` section that lets the user choose a source league, a completed source season, and inclusive `From position` / `To position` values before adding that selection to the team-name draft.
+  - Keep `NewSeasonView` as the orchestration surface and place source/range controls in a focused typed child component with props down and events up; keep the existing editable team textarea as the single draft roster source of truth.
+  - On import, append the selected names to the textarea without creating or persisting a season, preserve names already entered by hand, and leave the complete draft editable so the user can add promoted/relegated replacements before submitting normally.
+  - Show how many teams will be imported and identify the selected range clearly; when no completed source seasons exist, explain why import is unavailable without blocking fully manual season creation.
+  - Surface invalid ranges and duplicate/cap conflicts next to the import controls, move focus to actionable feedback when import fails, and disable import while a save retry makes the form read-only.
+  - Preserve the existing final submission validation and create fresh team IDs and fixtures only when `Create season & fixtures` succeeds.
+  - Add component/integration tests with GIVEN-WHEN-THEN JSDoc for source filtering, league/season changes, importing rows 4–20, appending to manual entries, correcting the draft after import, unavailable and invalid states, duplicate/cap conflicts, save-retry locking, and successful season creation without copied historical data.
+  - Use Playwright MCP to verify the keyboard-accessible import workflow, error focus, and responsive layout at desktop and tablet widths, including a representative cross-league promotion/relegation setup.
+
+## Application-Wide Input Behavior
+
+- [x] **T34 — Disable spellchecking for every editable field**
+  - Can run independently after T31.
+  - Set `spellcheck="false"` at the application root so browser and Tauri WebView spellchecking is disabled by default for the entire rendered application, including fields added by future features.
+  - Explicitly pass the disabled spellcheck setting through every reusable input wrapper and PrimeVue text component, and apply it to all native `input`, `textarea`, and `contenteditable` elements so component defaults or attribute-forwarding changes cannot re-enable red spelling underlines.
+  - Also disable automatic correction and capitalization on free-text fields where the underlying browser or WebView supports `autocorrect` and `autocapitalize`, without changing validation, input types, accessibility semantics, or keyboard behavior.
+  - Centralize the invariant in the smallest practical shared boundary and avoid duplicating spellcheck state or runtime watchers across feature components.
+  - Add component tests with GIVEN-WHEN-THEN JSDoc that inspect the actual rendered editable elements in season setup, regeneration, naming dialogs, and fixture result entry and confirm spellchecking is disabled.
+  - Add an automated regression guard covering all rendered editable controls so a newly introduced text field fails verification unless it inherits or explicitly declares disabled spellchecking.
+  - Use Playwright MCP to verify representative text fields in the browser renderer, then smoke-test the same behavior in the Tauri host on macOS.

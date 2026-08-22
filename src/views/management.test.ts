@@ -60,6 +60,9 @@ describe('league management views', () => {
     )
     const dialog = await screen.findByRole('dialog', { name: 'Create league' })
     const input = within(dialog).getByRole('textbox', { name: 'League name' })
+    expect(input).toHaveAttribute('spellcheck', 'false')
+    expect(input).toHaveAttribute('autocorrect', 'off')
+    expect(input).toHaveAttribute('autocapitalize', 'off')
 
     await fireEvent.update(input, '   ')
     await fireEvent.click(
